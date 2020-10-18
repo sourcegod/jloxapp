@@ -19,7 +19,12 @@ class Parser {
   List<Stmt> parse() {
     /* Grammar
      *
-    * program     → statement* EOF ;
+    * program     → declaration* EOF ;
+    *
+    * declaration → varDecl
+    *       | statement ;
+    *
+    * varDecl → "var" IDENTIFIER ( "=" expression )? ";" ;
     *
     * statement   → exprStmt
     *       | printStmt ;
@@ -28,7 +33,10 @@ class Parser {
     * 
     * printStmt → "print" expression ";" ;
     *
-    * expression : equality
+    * expression → assignment ;
+    *
+    * assignment → IDENTIFIER "=" assignment
+    *       | equality ;
     *
     * equality → comparison ( ( "!=" | "==" ) comparison )* ;
     * 
@@ -44,24 +52,58 @@ class Parser {
     * primary → "true" | "false" | "nil"
     *      | NUMBER | STRING
     *        | "(" expression ")"
+    *        | IDENTIFIER ;
     *
      * */
 
     List<Stmt> statements = new ArrayList<>();
     while (!isAtEnd()) {
-      statements.add(statement());
+      statements.add(declaration());
     }
 
     return statements;
   }
 
   private Expr expression() {
-    // expression : equality ;
+    // expression : assignment ;
     
-    return equality();
+    return assignment();
   }
 
-   private Stmt statement() {
+  private Expr assignment() {
+    /* assignment → IDENTIFIER "=" assignment
+    *       | equality ;
+    * */
+    
+    Expr expr = equality();
+
+    if (match(EQUAL)) {
+      Token equals = previous();
+      Expr value = assignment();
+
+      if (expr instanceof Expr.Variable) {
+        Token name = ((Expr.Variable)expr).name;
+        return new Expr.Assign(name, value);
+      }
+
+      error(equals, "Invalid assignment target."); 
+    }
+
+    return expr;
+  }
+
+  private Stmt declaration() {
+    try {
+      if (match(VAR)) return varDeclaration();
+
+      return statement();
+    } catch (ParseError error) {
+      synchronize();
+      return null;
+    }
+  }
+
+  private Stmt statement() {
     /* statement → exprStmt
      *             | printStmt ;
      * */
@@ -79,7 +121,19 @@ class Parser {
     return new Stmt.Print(value);
   }
   
-   private Stmt expressionStatement() {
+  private Stmt varDeclaration() {
+    Token name = consume(IDENTIFIER, "Expect variable name.");
+
+    Expr initializer = null;
+    if (match(EQUAL)) {
+      initializer = expression();
+    }
+
+    consume(SEMICOLON, "Expect ';' after variable declaration.");
+    return new Stmt.Var(name, initializer);
+  }
+
+  private Stmt expressionStatement() {
     // exprStmt  → expression ";" ;
 
     Expr expr = expression();
@@ -149,17 +203,17 @@ class Parser {
   }
 
   private Expr primary() {
-    /* primary → "true" | "false" | "nil"
-    *      | NUMBER | STRING
-    *        | "(" expression ")"
-    * */
-
+    // primary → NUMBER | STRING | "false" | "true" | "nil"
     if (match(FALSE)) return new Expr.Literal(false);
     if (match(TRUE)) return new Expr.Literal(true);
     if (match(NIL)) return new Expr.Literal(null);
 
     if (match(NUMBER, STRING)) {
       return new Expr.Literal(previous().literal);
+    }
+
+    if (match(IDENTIFIER)) {
+      return new Expr.Variable(previous());
     }
 
     if (match(LEFT_PAREN)) {
