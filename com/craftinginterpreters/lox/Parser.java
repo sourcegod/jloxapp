@@ -1,5 +1,6 @@
 package com.craftinginterpreters.lox;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.craftinginterpreters.lox.TokenType.*;
@@ -15,10 +16,20 @@ class Parser {
     this.tokens = tokens;
   }
 
-  Expr parse() {
-    /*
-    * expression : equality
+  List<Stmt> parse() {
+    /* Grammar
+     *
+    * program     → statement* EOF ;
+    *
+    * statement   → exprStmt
+    *       | printStmt ;
+    *
+    * exprStmt  → expression ";" ;
     * 
+    * printStmt → "print" expression ";" ;
+    *
+    * expression : equality
+    *
     * equality → comparison ( ( "!=" | "==" ) comparison )* ;
     * 
     * comparison → addition ( ( ">" | ">=" | "<" | "<=" ) addition )* ;
@@ -29,21 +40,51 @@ class Parser {
     * 
     * unary → ( "!" | "-" ) unary
     *           | primary
-    * 
-    * primary → NUMBER | STRING | "false" | "true" | "nil"
     *
-    * */
+    * primary → "true" | "false" | "nil"
+    *      | NUMBER | STRING
+    *        | "(" expression ")"
+    *
+     * */
 
-    try {
-      return expression();
-    } catch (ParseError error) {
-      return null;
+    List<Stmt> statements = new ArrayList<>();
+    while (!isAtEnd()) {
+      statements.add(statement());
     }
+
+    return statements;
   }
 
   private Expr expression() {
-    // expression : equality
+    // expression : equality ;
+    
     return equality();
+  }
+
+   private Stmt statement() {
+    /* statement → exprStmt
+     *             | printStmt ;
+     * */
+
+    if (match(PRINT)) return printStatement();
+
+    return expressionStatement();
+  }
+
+  private Stmt printStatement() {
+    // printStmt → "print" expression ";" ;
+
+    Expr value = expression();
+    consume(SEMICOLON, "Expect ';' after value.");
+    return new Stmt.Print(value);
+  }
+  
+   private Stmt expressionStatement() {
+    // exprStmt  → expression ";" ;
+
+    Expr expr = expression();
+    consume(SEMICOLON, "Expect ';' after expression.");
+    return new Stmt.Expression(expr);
   }
 
   private Expr equality() {
@@ -73,7 +114,6 @@ class Parser {
   }
 
   private Expr addition() {
-    // addition : multiplication ( ( "+" | "-" ) multiplication )* ;
     Expr expr = multiplication();
 
     while (match(MINUS, PLUS)) {
@@ -86,7 +126,6 @@ class Parser {
   }
 
   private Expr multiplication() {
-    // multiplication : unary ( ( "/" | "*" ) unary )* ;
     Expr expr = unary();
 
     while (match(SLASH, STAR)) {
@@ -99,9 +138,7 @@ class Parser {
   }
 
   private Expr unary() {
-    /* unary → ( "!" | "-" ) unary
-     *           | primary
-     * */
+    // unary → ( "!" | "-" ) unary
     if (match(BANG, MINUS)) {
       Token operator = previous();
       Expr right = unary();
@@ -112,7 +149,11 @@ class Parser {
   }
 
   private Expr primary() {
-    // primary → NUMBER | STRING | "false" | "true" | "nil"
+    /* primary → "true" | "false" | "nil"
+    *      | NUMBER | STRING
+    *        | "(" expression ")"
+    * */
+
     if (match(FALSE)) return new Expr.Literal(false);
     if (match(TRUE)) return new Expr.Literal(true);
     if (match(NIL)) return new Expr.Literal(null);
