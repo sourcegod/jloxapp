@@ -1,7 +1,10 @@
 Lox changelog
-Last update: mardi, 25/06/19 
+Last update: vendredi, 28/06/19 
 
 # Date: vendredi, 28/06/19
+-- Adding: escape sequence characters like:
+\\, \n, \", \r, \t, \b in a quote-string.
+
 -- Adding: refactoring compound assignment to use only visitassign class.
 -- Adding: multiply and *= operator for string.
 

@@ -1,0 +1,3 @@
+print "This is first line\nAnd a second line\n
+Forth line with a Tab\tYes it works!\tNo problemo."
+

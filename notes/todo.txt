@@ -3,8 +3,15 @@ Date: mercredi, 06/03/19
 Last update: vendredi, 28/06/19
 
 # Date: vendredi, 28/06/19
-* -- Refactoring compound assignment to be used only in visitassign class.
-* -- Adding support for multiply string and compound assignment *= for string.
+* -- Ajouter les séquences d'échappement de caractères comme:
+\\, \n, \r, \t, \b, \", dans une chaîne de caractères.
+
+* -- Refactoriser les assignements composés pour les utiliser seulement dans la
+classe visitAssign.
+
+* -- Ajouter la prise en charge de multiplication entre deux strings,
+et la multiplication d'assignement composé *= pour les strings.
+
 
 # Date: mardi, 25/06/19
 * -- Ajouter les opérateurs de prefix et postfix (-- et ++).

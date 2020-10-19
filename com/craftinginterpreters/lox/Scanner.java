@@ -64,6 +64,53 @@ class Scanner {
     col++;
     return source.charAt(current - 1);
   }
+  
+  private String unescape(String escaped) {
+    // Adding: escape sequence character
+    StringBuilder unescapeChar = new StringBuilder();
+    
+    for (int i=0; i < escaped.length(); i++) {
+        if (escaped.charAt(i) == '\\') {
+            i++;
+                
+            switch (escaped.charAt(i)) {
+                case 'n':
+                    unescapeChar.append("\n");
+                    break;
+
+                case 'r':
+                    unescapeChar.append("\r");
+                    break;
+                     
+                case '\\':
+                    unescapeChar.append("\\");
+                    break;
+                    
+                case '"':
+                    unescapeChar.append("\"");
+                    break;
+
+                case 't':
+                    unescapeChar.append("\t");
+                    break;
+                   
+                case 'b':
+                    unescapeChar.append("\b");
+                    break;
+                      
+                default:
+                    Lox.error(line, col, 
+                            "Unrecognized escape sequence '\\" + 
+                            escaped.charAt(i) + "'.");
+            }
+        } else {
+            unescapeChar.append(escaped.charAt(i));
+        }
+    }
+        
+    return  unescapeChar.toString();
+    
+  }
 
   private void addToken(TokenType type) {
     addToken(type, null);
@@ -241,6 +288,7 @@ class Scanner {
           line++;
           col =0;
       }
+      if (peek() == '\\' && peekNext()  == '"') advance();
       advance();
     }
 
@@ -252,9 +300,11 @@ class Scanner {
 
     // The closing ".                                       
     advance();
-
+    
+    // Adding: Handle escapes sequences
     // Trim the surrounding quotes.                         
-    String value = source.substring(start + 1, current - 1);
+    String value = unescape(source.substring(start + 1, current - 1));
+
     addToken(STRING, value);
   }
 
