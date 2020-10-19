@@ -1,4 +1,17 @@
-Last update: lundi, 08/04/19
+Lox changelog
+Last update: mercredi, 22/05/19
+
+# Date: mercredi, 22/05/19
+Adding: superclass, inheritance.
+End of part II for lox's book.
+
+# Date: dimanche, 05/05/2019
+Adding: class, getter, setter, this, and constructor.
+
+# Date: vendredi, 26/04/19
+Adding: debug function in Resolver class
+static class Variable in Resolver class.
+Warnings manager on inused variables
 
 # Date: lundi, 08/04/19
 Adding: lambda functionBody fully implemented,

@@ -1,6 +1,11 @@
 Todo sur l'interpreteur java
 Date: mercredi, 06/03/19
-Last update: mardi, 14/05/19
+Last update: mercredi, 22/05/19
+
+# Date: mercredi, 22/05/19
+-- Chapitre 13:
+-- Ajouter la prise en charge l'héritage multiple
+
 # Date: mardi, 14/05/19
 -- Chapitre 12 classe
 Ajouter la prise en charge de variable static dans la classe.

@@ -18,6 +18,7 @@ public class GenerateAst {
       "Assign   : Token name, Expr value",
 
       "Binary   : Expr left, Token operator, Expr right",
+
       "Ternary   : Expr condition, Expr thenBranch, Expr elseBranch",
 
       "Call     : Expr callee, Token paren, List<Expr> arguments",
@@ -34,6 +35,8 @@ public class GenerateAst {
 
       "Set      : Expr object, Token name, Expr value",
 
+      "Super    : Token keyword, Token method",
+
       "This     : Token keyword",
 
       "Unary    : Token operator, Expr right",
@@ -46,7 +49,10 @@ public class GenerateAst {
 
       "Block      : List<Stmt> statements",
 
-      "Class      : Token name, List<Stmt.Function> methods",
+      "Break      : Token keyword",
+
+      "Class      : Token name, Expr.Variable superclass," +
+                  " List<Stmt.Function> methods",
 
       "Expression : Expr expression",
 
@@ -60,9 +66,7 @@ public class GenerateAst {
 
       "Var        : Token name, Expr initializer",
 
-      "While      : Expr condition, Stmt body",
-
-      "Break      : Token keyword"
+      "While      : Expr condition, Stmt body"
 
     ));
 

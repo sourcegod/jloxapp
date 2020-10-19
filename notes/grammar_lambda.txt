@@ -1,16 +1,10 @@
-    /* Grammar for Lox language
-    * Grammar superclass
-     * Date: 22/05/19
+/* Grammar lambda
      *
     * program     → declaration* EOF ;
     *
-    * declaration → classDecl
-    *       | funDecl
+    * declaration → funDecl
     *       | VarDecl
     *       | statement ;
-    *
-    * classDecl → "class" IDENTIFIER ( "<" IDENTIFIER )?
-    *        "{" function* "}" ;
     *
     * funDecl  → "fun" function ;
     *
@@ -55,7 +49,7 @@
     *
     * expression → assignment ;
     *
-    * assignment → ( call "." )? identifier "=" assignment
+    * assignment → identifier "=" assignment
     *       | logic_or 
     *       | compoundAssignment ;
     *       | ternaryExpr ; 
@@ -78,15 +72,13 @@
     * 
     * unary → ( "!" | "-" | "+" ) unary | call ;
     *
-    * call → primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
+    * call  → primary ( "(" arguments? ")" )* ;
     *
     * primary → "true" | "false" | "nil"
     *      | NUMBER | STRING
     *        | "(" expression ")"
-    *        | this
     *        | IDENTIFIER
-    *        | lambda
-    *        | "super" "." IDENTIFIER ;
+    *        | lambda ;
     *
     * arguments → expression ( "," expression )* ;
     *
