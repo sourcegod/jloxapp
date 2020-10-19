@@ -1,0 +1,6 @@
+var a=33;
+// { print "coucou " + a; }
+fun test(fnx) { fnx(); }
+// var v = fun () { 55; };
+// test();
+test (fun () { print a; });

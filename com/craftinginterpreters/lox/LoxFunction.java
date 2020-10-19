@@ -3,10 +3,12 @@ package com.craftinginterpreters.lox;
 import java.util.List;
 
 class LoxFunction implements LoxCallable {
-  private final Stmt.Function declaration;
+  private final String name;
+  private final Expr.Function declaration;
   private final Environment closure;
 
-  LoxFunction(Stmt.Function declaration, Environment closure) {
+  LoxFunction(String name, Expr.Function declaration, Environment closure) {
+    this.name = name;
     this.closure = closure;
 
     this.declaration = declaration;
@@ -14,7 +16,9 @@ class LoxFunction implements LoxCallable {
 
   @Override
   public String toString() {
-    return "<fn " + declaration.name.lexeme + ">";
+   
+    if (name == null) return "<fn> Lambda";
+    return "<fn " + name + ">";
   }
 
   @Override

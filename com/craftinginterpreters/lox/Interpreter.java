@@ -15,6 +15,8 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   Object outputResult;
   Boolean isPrint = false;
+  boolean isDebug = true;
+  String classTitle = "Interpreter: ";
 
   Interpreter() {
     globals.define("clock", new LoxCallable() {
@@ -36,7 +38,28 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   }
 
+  void debug(String msg) {
+    if (isDebug == true) {
+      Logger.debug(classTitle + msg);
+    }
+    
+  }
+
+  String getClassName(Object obj) {
+    String name = obj.getClass().getName();
+    name = name.substring(name.lastIndexOf(".") +1);
+    return name;
+  }
   void interpret(List<Stmt> statements) {
+    String name = "";
+    debug("List of Statement class name");
+    for (int i=0; i < statements.size(); i++) {
+      Stmt item = statements.get(i);
+      // name = item.getClass().getName();
+      name = getClassName(item);
+      debug("Statement " + i + ": " + name);
+    }
+
     try {
       for (Stmt statement : statements) {
         execute(statement);
@@ -102,6 +125,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Object visitVariableExpr(Expr.Variable expr) {
+    debug("visitVariable: name: " + getClassName(expr.name));
     return lookUpVariable(expr.name, expr);
   }
 
@@ -121,10 +145,10 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   private boolean isTruthy(Object object) {
     if (object == null) return false;
-    if (object instanceof Double 
-        && Double.valueOf(object.toString()) == 0) {
+    if (object instanceof Double) {
       // System.out.println("Je passe ici");
-      return false; 
+      Double dbl = (Double)object;
+      if (dbl == 0) return false; 
     }
     if (object instanceof Boolean) return (boolean)object;
     
@@ -160,12 +184,15 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   }
 
   private Object evaluate(Expr expr) {
+    debug("evaluate: expr : " + getClassName(expr));
     outputResult =  expr.accept(this);
+    debug("evaluate: result : " + outputResult);
     
     return outputResult;
   }
 
   private void execute(Stmt stmt) {
+    debug("execute: stmt: " + getClassName(stmt));
     stmt.accept(this);
 
   }
@@ -175,6 +202,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   }
 
   void executeBlock(List<Stmt> statements, Environment environment) {
+    debug("executeBlock: ");
     Environment previous = this.environment;
     try {
       this.environment = environment;
@@ -191,19 +219,23 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Void visitBlockStmt(Stmt.Block stmt) {
+    debug("visitBlock: " + getClassName(stmt.statements));
     executeBlock(stmt.statements, new Environment(environment));
     return null;
   }
 
   @Override
   public Void visitExpressionStmt(Stmt.Expression stmt) {
+    debug("visitExpressionStmt: expression : " + getClassName(stmt.expression));
     evaluate(stmt.expression);
     return null; 
   }
 
   @Override
   public Void visitFunctionStmt(Stmt.Function stmt) {
-    LoxFunction function = new LoxFunction(stmt, environment);
+    debug("visitFunctionStmt : name: " + stmt.name.lexeme);
+    LoxFunction function = new LoxFunction(stmt.name.lexeme, stmt.function, environment);
+
     environment.define(stmt.name.lexeme, function);
     return null;
   }
@@ -220,9 +252,12 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Void visitPrintStmt(Stmt.Print stmt) {
+    debug("visitPrint: expression: " + getClassName(stmt.expression));
     Object value = evaluate(stmt.expression);
-    System.out.println(stringify(value));
+    value = stringify(value);
+    System.out.println(value);
     isPrint = true;
+    debug("visitPrint apres stringify value: " + value);
 
     return null;
   }
@@ -281,7 +316,9 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Object visitAssignExpr(Expr.Assign expr) {
+    debug("assignexpr : expr : " + getClassName(expr));
     Object value = evaluate(expr.value);
+    debug("assignexpr : value: " + value);
 
     Integer distance = locals.get(expr);
     if (distance != null) {
@@ -379,8 +416,9 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Object visitCallExpr(Expr.Call expr) {
+    debug("visitFunctionCallExpr : callee: " + getClassName(expr.callee));
     Object callee = evaluate(expr.callee);
-    // System.out.println(expr.callee.getClass().getName());
+    debug("voici callee : " + callee);
 
     List<Object> arguments = new ArrayList<>();
     for (Expr argument : expr.arguments) { 
@@ -402,6 +440,14 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     if (callee instanceof Println) isPrint = true;
 
     return function.call(this, arguments);
+  }
+  
+  public Void visitFunctionExpr(Expr.Function expr) {
+    debug("visitFunctionExpr : " + getClassName(expr));
+    // executeBlock(expr.body, new Environment(environment));
+
+ return null;
+
   }
 
   private void checkNumberOperands(Token operator,

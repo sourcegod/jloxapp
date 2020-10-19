@@ -44,7 +44,7 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     declare(stmt.name);
     define(stmt.name);
 
-    resolveFunction(stmt, FunctionType.FUNCTION);
+    resolveFunction(stmt.function, FunctionType.FUNCTION);
     return null;
   }
 
@@ -134,6 +134,20 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     return null;
   }
+  
+  @Override
+  public Void visitFunctionExpr(Expr.Function expr) {
+    for (Token param : expr.params) {
+      declare(param);
+      define(param);
+    }
+    beginScope();
+    resolve(expr.body);
+    endScope();
+    // resolveFunction(expr, FunctionType.FUNCTION);
+    return null;
+
+  }
 
   @Override
   public Void visitGroupingExpr(Expr.Grouping expr) {
@@ -176,7 +190,7 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
   }
 
   private void resolveFunction(
-      Stmt.Function function, FunctionType type) {
+      Expr.Function function, FunctionType type) {
     FunctionType enclosingFunction = currentFunction;
     currentFunction = type;
 

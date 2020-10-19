@@ -22,6 +22,8 @@ public class GenerateAst {
 
       "Call     : Expr callee, Token paren, List<Expr> arguments",
 
+      "Function : List<Token> params, List<Stmt> body",
+      
       "Grouping : Expr expression",
 
       "Literal  : Object value",
@@ -40,7 +42,7 @@ public class GenerateAst {
 
       "Expression : Expr expression",
 
-      "Function   : Token name, List<Token> params, List<Stmt> body",
+      "Function   : Token name, Expr.Function function",
 
       "If         : Expr condition, Stmt thenBranch, Stmt elseBranch",
 

@@ -1,4 +1,9 @@
-Last update: dimanche, 24/03/19
+Last update: mardi, 02/04/19
+
+# Date: mardi, 02/04/19
+Adding: Lambda, function expression partially implemented
+Logger class and debug function.
+
 # Date: dimanche, 24/03/19
 Adding: Ternary operator,
 resolver class for semantic analyzer
