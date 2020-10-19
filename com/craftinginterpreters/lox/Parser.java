@@ -240,7 +240,7 @@ class Parser {
       if (match(CLASS)) return classDeclaration();
 
       if (check(FUN) && checkNext(IDENTIFIER) ) {
-        Logger.debug("je suis apres fun");
+        // Logger.debug("je suis apres fun");
         consume(FUN, null);
         return function("function");
       }

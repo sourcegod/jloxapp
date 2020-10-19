@@ -52,23 +52,27 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   }
   void interpret(List<Stmt> statements) {
     String name = "";
-    debug("\n" + classTitle);
-    debug("List of Statement class name");
+    /*
+   // debug("\n" + classTitle);
+   // debug("List of Statement class name");
     for (int i=0; i < statements.size(); i++) {
       Stmt item = statements.get(i);
       // name = item.getClass().getName();
       name = getClassName(item);
-      debug("Statement " + i + ": " + name);
+     // debug("Statement " + i + ": " + name);
     }
+    */
+
 
     try {
       for (Stmt statement : statements) {
         execute(statement);
       }
+      
       // whether no print statement 
       if (!isPrint) printResult();
       isPrint = false;
-      printState();
+      // printState();
 
     } catch (RuntimeError error) {
       Lox.runtimeError(error);
@@ -78,28 +82,29 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   public void printResult() {
     // print global outputResult whether no print statement in the code
     // System.out.println(outputResult.getClass().getName());
-    // if (outputResult instanceof String || outputResult instanceof Double)
+    // System.out.println("Finalement:"); 
+    if (outputResult instanceof String || outputResult instanceof Double)
     System.out.println(stringify(outputResult));
   
   }
 
   public void printState() {
-      debug("\nEnvironment state");
-      debug("Globals state");
+     // debug("\nEnvironment state");
+     // debug("Globals state");
       Map<String, Object> values = globals.values;
       if (values.isEmpty()) {
-          debug("Globals is empty");
+         // debug("Globals is empty");
       } else {
           for (Map.Entry<String, Object> entry : values.entrySet())  {
-              debug(entry.getKey() + ": " + entry.getValue());
+             // debug(entry.getKey() + ": " + entry.getValue());
           }
       }
-      debug("\nLocals state");
+     // debug("\nLocals state");
       if (locals.isEmpty()) {
-          debug("Locals is empty");
+         // debug("Locals is empty");
       } else {
           for (Map.Entry<Expr, Integer> entry : locals.entrySet()) {
-              debug(entry.getKey() + ": " + entry.getValue());
+             // debug(entry.getKey() + ": " + entry.getValue());
           }
       }
  
@@ -187,7 +192,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Object visitVariableExpr(Expr.Variable expr) {
-    debug("visitVariableExpr: name: " + expr.name.lexeme);
+   // debug("visitVariableExpr: name: " + expr.name.lexeme);
     return lookUpVariable(expr.name, expr);
   }
 
@@ -246,26 +251,26 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   }
 
   private Object evaluate(Expr expr) {
-    debug("evaluate: expr : " + getClassName(expr));
+    //// debug("evaluate: expr : " + getClassName(expr));
     outputResult =  expr.accept(this);
-    debug("evaluate: result : " + outputResult);
+    //// debug("evaluate: result : " + outputResult);
     
     return outputResult;
   }
 
   private void execute(Stmt stmt) {
-    debug("\nexecute top level: stmt: " + getClassName(stmt));
+   // debug("\nexecute top level: stmt: " + getClassName(stmt));
     stmt.accept(this);
 
   }
 
   void resolve(Expr expr, int depth) {
-    debug("\nResolve expr in Interpreter");
+   // debug("\nResolve expr in Interpreter");
     locals.put(expr, depth);
   }
 
   void executeBlock(List<Stmt> statements, Environment environment) {
-    debug("executeBlock: ");
+   // debug("executeBlock: ");
     Environment previous = this.environment;
     try {
       this.environment = environment;
@@ -282,14 +287,14 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Void visitBlockStmt(Stmt.Block stmt) {
-    debug("visitBlock: " + getClassName(stmt.statements));
+   // debug("visitBlock: " + getClassName(stmt.statements));
     executeBlock(stmt.statements, new Environment(environment));
     return null;
   }
 
   @Override
   public Void visitClassStmt(Stmt.Class stmt) {
-    debug("visitClassStmt");
+   // debug("visitClassStmt");
     Object superclass = null;
     if (stmt.superclass != null) {
       superclass = evaluate(stmt.superclass);
@@ -328,14 +333,14 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Void visitExpressionStmt(Stmt.Expression stmt) {
-    debug("visitExpressionStmt: expression : " + getClassName(stmt.expression));
+   // debug("visitExpressionStmt: expression : " + getClassName(stmt.expression));
     evaluate(stmt.expression);
     return null; 
   }
 
   @Override
   public Void visitFunctionStmt(Stmt.Function stmt) {
-    debug("visitFunctionStmt : name: " + stmt.name.lexeme);
+   // debug("visitFunctionStmt : name: " + stmt.name.lexeme);
     // Adding: params for lambda function
     LoxFunction function = new LoxFunction(stmt.name.lexeme, stmt.function, 
         environment, false);
@@ -356,12 +361,12 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Void visitPrintStmt(Stmt.Print stmt) {
-    debug("visitPrint: expression: " + getClassName(stmt.expression));
+   // debug("visitPrint: expression: " + getClassName(stmt.expression));
     Object value = evaluate(stmt.expression);
     value = stringify(value);
     System.out.println(value);
     isPrint = true;
-    debug("visitPrint apres stringify value: " + value);
+   // debug("visitPrint apres stringify value: " + value);
 
     return null;
   }
@@ -376,13 +381,13 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Void visitVarStmt(Stmt.Var stmt) {
-    debug("VisitVarStmt: ");
-    debug("var name: " + stmt.name.lexeme);
+   // debug("VisitVarStmt: ");
+   // debug("var name: " + stmt.name.lexeme);
     Object value = null;
     if (stmt.initializer != null) {
       value = evaluate(stmt.initializer);
     }
-    debug("Var value: " + value);
+   // debug("Var value: " + value);
 
     environment.define(stmt.name.lexeme, value);
     printState();
@@ -391,7 +396,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Void visitWhileStmt(Stmt.While stmt) {
-    debug("visitWhileStmt: " );
+   // debug("visitWhileStmt: " );
     while (isTruthy(evaluate(stmt.condition))) {
       try {
         execute(stmt.body);
@@ -403,7 +408,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     }
     
-    debug("End visitWhileStmt");
+   // debug("End visitWhileStmt");
 
     return null;
   }
@@ -427,10 +432,10 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Object visitAssignExpr(Expr.Assign expr) {
-    debug("VisitAssignexpr : expr : " + getClassName(expr));
+   // debug("VisitAssignexpr : expr : " + getClassName(expr));
     Object value = evaluate(expr.value);
-    debug("Assign name: " + expr.name.lexeme);
-    debug("Assign value: " + value);
+   // debug("Assign name: " + expr.name.lexeme);
+   // debug("Assign value: " + value);
 
     Integer distance = locals.get(expr);
     if (distance != null) {
@@ -446,8 +451,8 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   public Object visitBinaryExpr(Expr.Binary expr) {
     Object left = evaluate(expr.left);
     Object right = evaluate(expr.right); 
-    debug("VisitBinaryExpr: ");
-    debug("left: " + left + ", operator: " + expr.operator.lexeme + ", right: " + right);
+   // debug("VisitBinaryExpr: ");
+   // debug("left: " + left + ", operator: " + expr.operator.lexeme + ", right: " + right);
 
     switch (expr.operator.type) {
       case GREATER:
@@ -530,9 +535,9 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Object visitCallExpr(Expr.Call expr) {
-    debug("visitCallExpr : callee: " + getClassName(expr.callee));
+   // debug("visitCallExpr : callee: " + getClassName(expr.callee));
     Object callee = evaluate(expr.callee);
-    debug("voici callee : " + callee);
+   // debug("voici callee : " + callee);
 
     List<Object> arguments = new ArrayList<>();
     for (Expr argument : expr.arguments) { 
@@ -569,8 +574,8 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   public Object visitFunctionExpr(Expr.Function expr) {
     // Adding: for lambda function
-    debug("visitFunctionExpr : " + getClassName(expr));
-    debug("visitFunctionExpr : body " + getClassName(expr.body));
+   // debug("visitFunctionExpr : " + getClassName(expr));
+   // debug("visitFunctionExpr : body " + getClassName(expr.body));
     // executeBlock(expr.body, new Environment(environment));
 
  return new LoxFunction(null, expr, environment, false);
