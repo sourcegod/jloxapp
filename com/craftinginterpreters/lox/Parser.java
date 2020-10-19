@@ -38,7 +38,10 @@ class Parser {
     *           | forStmt
     *           | ifStmt
     *           | printStmt
-    *            | whileStmt
+    *           | returnStmt
+    *           | whileStmt
+    *           | breakStmt
+    *           | continueStmt
     *           | block ;
     *
     * exprStmt  → expression ";" ;
@@ -51,7 +54,13 @@ class Parser {
     *
     * printStmt → "print" expression ";" ;
     *
+    * returnStmt → "return" expression? ";" ;
+    *
     * whileStmt → "while" "(" expression ")" statement ;
+    *
+    * breakStmt → "break" ";" ;
+    *
+    * continueStmt → "continue" ";" ;
     *
     * block     → "{" declaration* "}" ;
     *
@@ -73,6 +82,7 @@ class Parser {
     * multiplication : unary ( ( "/" | "*" ) unary )* ;
     * 
     * unary → ( "!" | "-" ) unary | call ;
+    *
     * call  → primary ( "(" arguments? ")" )* ;
     *
     * primary → "true" | "false" | "nil"
@@ -169,10 +179,13 @@ class Parser {
 
   private Stmt statement() {
     /* statement → exprStmt
-     *            | forStmt ;
-     *            | ifStmt ;
-    *             | printStmt ;
-    *             | whileStmt ;
+     *            | forStmt
+     *            | ifStmt 
+    *             | printStmt
+    *             | returnStmt 
+    *             | whileStmt 
+    *             | breakStmt
+    *             | continueStmt
     *             | block ;
     * */
 
@@ -182,9 +195,11 @@ class Parser {
     
     if (match(PRINT)) return printStatement();
 
+    if (match(RETURN)) return returnStatement();
+    
     if (match(WHILE)) return whileStatement();
 
-    if (match(BREAK)) return breakStatement();
+    if (match(BREAK, CONTINUE)) return breakStatement(previous());
 
     if (match(LEFT_BRACE)) return new Stmt.Block(block());
     
@@ -239,11 +254,14 @@ class Parser {
 
   }
   
-  private Stmt breakStatement() {
-    // for test
-    Expr condition = null;
+  private Stmt breakStatement(Token token) {
+    /* breakStmt → "break" ";" ;
+    *
+    * continueStmt → "continue" ";" ;
+    * */
+    
     consume(SEMICOLON, "Expected ';' after break statement.");
-    return new Stmt.Break(condition);
+    return new Stmt.Break(token);
     
   }
 
@@ -270,6 +288,19 @@ class Parser {
     return new Stmt.Print(value);
   }
   
+  private Stmt returnStatement() {
+    // returnStmt → "return" expression? ";" ;
+
+    Token keyword = previous();
+    Expr value = null;
+    if (!check(SEMICOLON)) {
+      value = expression();
+    }
+
+    consume(SEMICOLON, "Expect ';' after return value.");
+    return new Stmt.Return(keyword, value);
+  }
+
   private Stmt varDeclaration() {
     // varDecl → "var" IDENTIFIER ( "=" expression )? ";" ;
     

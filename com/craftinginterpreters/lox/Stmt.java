@@ -9,6 +9,7 @@ abstract class Stmt {
     R visitFunctionStmt(Function stmt);
     R visitIfStmt(If stmt);
     R visitPrintStmt(Print stmt);
+    R visitReturnStmt(Return stmt);
     R visitVarStmt(Var stmt);
     R visitWhileStmt(While stmt);
     R visitBreakStmt(Break stmt);
@@ -76,6 +77,19 @@ abstract class Stmt {
 
     final Expr expression;
   }
+  static class Return extends Stmt {
+    Return(Token keyword, Expr value) {
+      this.keyword = keyword;
+      this.value = value;
+    }
+
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitReturnStmt(this);
+    }
+
+    final Token keyword;
+    final Expr value;
+  }
   static class Var extends Stmt {
     Var(Token name, Expr initializer) {
       this.name = name;
@@ -103,15 +117,15 @@ abstract class Stmt {
     final Stmt body;
   }
   static class Break extends Stmt {
-    Break(Expr condition) {
-      this.condition = condition;
+    Break(Token token) {
+      this.token = token;
     }
 
     <R> R accept(Visitor<R> visitor) {
       return visitor.visitBreakStmt(this);
     }
 
-    final Expr condition;
+    final Token token;
   }
 
   abstract <R> R accept(Visitor<R> visitor);

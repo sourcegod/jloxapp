@@ -143,8 +143,8 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         if ( statement instanceof Stmt.Break) { 
           // System.out.println("un break statement");
           // this.environment = previous;
-          loopStack.peek().isBreak = true;
-          break;
+          // loopStack.peek().isBreak = true;
+          // break;
         }
         
         // System.out.println("je passe ici");
@@ -192,6 +192,14 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   }
 
   @Override
+  public Void visitReturnStmt(Stmt.Return stmt) {
+    Object value = null;
+    if (stmt.value != null) value = evaluate(stmt.value);
+
+    throw new Return(value);
+  }
+
+  @Override
   public Void visitVarStmt(Stmt.Var stmt) {
     Object value = null;
     if (stmt.initializer != null) {
@@ -204,24 +212,32 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Void visitWhileStmt(Stmt.While stmt) {
-    LoopState lpState = new LoopState();
-    loopStack.push(new LoopState());
     while (isTruthy(evaluate(stmt.condition))) {
-      lpState = loopStack.peek();
-      System.out.println("Truthy");
-      System.out.println(lpState.isBreak.toString());
-      if (lpState.isBreak == true) break;
+      try {
+        execute(stmt.body);
+      } catch (RuntimeError err) {
+        // System.out.println("Caught in visitWhile with message: " + err.getMessage());
+        if (err.token.lexeme.equals("continue")) continue;
+        if (err.token.lexeme.equals("break")) break;
+      }
 
-      execute(stmt.body);
     }
 
-    loopStack.pop();
     return null;
   }
   
   public Void visitBreakStmt(Stmt.Break stmt) {
-    System.out.println("Je suis dans break\n");
-    loopStack.peek().isBreak = true;
+    // System.out.println("Je suis dans break\n");
+    // loopStack.peek().isBreak = true;
+    // throw new RuntimeException("No while statement"); // RuntimeError(token, "No while statement");
+    String msg = "";
+    if (stmt.token.lexeme.equals("break")) {
+      msg = "Error: Break must with while loop";
+      throw new RuntimeError(stmt.token, msg);
+    } else if (stmt.token.lexeme.equals("continue")) {
+      msg = "Error: Continue must with while loop";
+      throw new RuntimeError(stmt.token, msg);
+    }
 
     return null;
   }
@@ -288,6 +304,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   @Override
   public Object visitCallExpr(Expr.Call expr) {
     Object callee = evaluate(expr.callee);
+    System.out.println(expr.callee.getClass().getName());
 
     List<Object> arguments = new ArrayList<>();
     for (Expr argument : expr.arguments) { 
