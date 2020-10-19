@@ -17,6 +17,8 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
 
   Stack<LoopState> loopStack = new Stack<>();
+  Object outputResult;
+  Boolean isPrint = false;
 
   Interpreter() {
     globals.define("clock", new LoxCallable() {
@@ -32,6 +34,10 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
       @Override
       public String toString() { return "<native fn>"; }
     });
+
+    globals.define("println", new Println());
+
+
   }
 
   void interpret(List<Stmt> statements) {
@@ -39,12 +45,24 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
       for (Stmt statement : statements) {
         execute(statement);
       }
+      // whether no print statement 
+      if (!isPrint) printResult();
+      isPrint = false;
+
     } catch (RuntimeError error) {
       Lox.runtimeError(error);
     }
   }
 
-    @Override
+  public void printResult() {
+    // print global outputResult whether no print statement in the code
+    // System.out.println(outputResult.getClass().getName());
+    // if (outputResult instanceof String || outputResult instanceof Double)
+    System.out.println(stringify(outputResult));
+  
+  }
+
+  @Override
   public Object visitLiteralExpr(Expr.Literal expr) {
     return expr.value;
   }
@@ -125,7 +143,9 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   }
 
   private Object evaluate(Expr expr) {
-    return expr.accept(this);
+    outputResult =  expr.accept(this);
+    
+    return outputResult;
   }
 
   private void execute(Stmt stmt) {
@@ -188,6 +208,8 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   public Void visitPrintStmt(Stmt.Print stmt) {
     Object value = evaluate(stmt.expression);
     System.out.println(stringify(value));
+    isPrint = true;
+
     return null;
   }
 
@@ -285,9 +307,17 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         if (left instanceof String && right instanceof String) {
           return (String)left + (String)right;
         }
+        
+        if (left instanceof Double && right instanceof String) {
+          return stringify(left) + (String)right;
+        }
+
+        if (left instanceof String && right instanceof Double) {
+          return (String)left + stringify(right);
+        }
 
         throw new RuntimeError(expr.operator,
-            "Operands must be two numbers or two strings.");
+        "Operands must be numbers or strings.");
 
       case SLASH:
         checkNumberOperands(expr.operator, left, right);
@@ -304,7 +334,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   @Override
   public Object visitCallExpr(Expr.Call expr) {
     Object callee = evaluate(expr.callee);
-    System.out.println(expr.callee.getClass().getName());
+    // System.out.println(expr.callee.getClass().getName());
 
     List<Object> arguments = new ArrayList<>();
     for (Expr argument : expr.arguments) { 
@@ -323,6 +353,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
           function.arity() + " arguments but got " +
           arguments.size() + ".");
     }
+    if (callee instanceof Println) isPrint = true;
 
     return function.call(this, arguments);
   }
