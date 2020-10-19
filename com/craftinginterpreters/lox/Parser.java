@@ -18,7 +18,7 @@ class Parser {
   }
 
   List<Stmt> parse() {
-    /* Grammar Bitwise operators
+    /* Grammar Comma operator
      *
     * program     → declaration* EOF ;
     *
@@ -53,8 +53,8 @@ class Parser {
     * exprStmt  → expression ";" ;
     *
     *  forStmt   → "for" "(" ( varDecl | exprStmt | ";" )
-    *                  expression? ";"
-    *                  expression? ")" statement ;
+    *                  ( expression )? ";"
+    *                  ( expression )? ")" statement ;
     *
     * ifStmt    → "if" "(" expression ")" statement ( "else" statement )? ;
     *
@@ -71,21 +71,28 @@ class Parser {
     *
     * block     → "{" declaration* "}" ;
     *
-    * expression → assignment ;
+    * expression → comma ;
+    *
+    * comma → assignment ( "," assignment )* ;
     *
     * assignment → ( call "." )? identifier "=" assignment
-    *       | logic_or 
+    *       | conditional
     *       | compoundAssignment ;
-    *       | ternaryExpr ; 
-    *
-    * logic_or   → logic_and ( "or" logic_and )* ;
     *
     * compoundAssignment → identifier ( "+=" | "-=" | "*=" | "/=" | "%=" 
     *                               | "&=" | "|=" | "^=") addition ;
     *
-    * ternaryExpr : expression "?" expression ":" expression ;
+    * conditional : logicOr "?" expression ":" conditional;
     *
-    * logic_and  → equality ( "and" equality )* ;
+    * logicOr   → logicAnd ( "or" logicAnd )* ;
+    *
+    * logicAnd  → bitwiseOr ( "and" bitwiseOr )* ;
+    *
+    * bitwiseOr → bitwiseXor ( ( "|" ) )* bitwiseXor ;
+    *
+    * bitwiseXor → bitwiseAnd ( ( "^" ) )* bitwiseAnd ;
+    *
+    * bitwiseAnd → equality ( ( "&" ) )* equality ;
     *
     * equality → comparison ( ( "!=" | "==" ) comparison )* ;
     * 
@@ -93,7 +100,9 @@ class Parser {
     * 
     * addition → multiplication ( ( "+" | "-" ) multiplication )* ;
     *
-    * multiplication → unary ( ( "/" | "*" | "%" | "&" | "|" | "^") unary )* ;
+    * multiplication → modulo ( ( "/" | "*" ) modulo )* ;
+    *
+    * modulo → unary ( ( "%" ) unary ;
     * 
     * unary → ( "!" | "-" | "+" | "~") unary | call ;
     *
@@ -107,7 +116,7 @@ class Parser {
     *        | lambda
     *        | "super" "." IDENTIFIER ;
     *
-    * arguments → expression ( "," expression )* ;
+    * arguments → assignment ( "," assignment )* ;
     *
     * */
 
@@ -117,117 +126,6 @@ class Parser {
     }
 
     return statements;
-  }
-
-  private Expr expression() {
-    // expression : assignment ;
-    
-    return assignment();
-  }
-
-  private Expr assignment() {
-    /* assignment → ( call "." )? identifier "=" assignment
-    *       | logic_or
-    *       | compoundAssignment ;
-    * */
-
-    Expr expr = or();
-
-    if (match(EQUAL)) {
-      Token equals = previous();
-      Expr value = assignment();
-
-      if (expr instanceof Expr.Variable) {
-        Token name = ((Expr.Variable)expr).name;
-        return new Expr.Assign(name, value);
-      } else if (expr instanceof Expr.Get) {
-        Expr.Get get = (Expr.Get)expr;
-        return new Expr.Set(get.object, get.name, value);
-      }
-
-      error(equals, "Invalid assignment target."); 
-    }
-    
-    // adding: compound assignment
-    if (match(PLUS_EQUAL, MINUS_EQUAL, 
-              STAR_EQUAL, SLASH_EQUAL, MOD_EQUAL,
-              BIT_AND_EQUAL, BIT_OR_EQUAL, BIT_XOR_EQUAL)) {
-      Token operator = previous();
-      return compoundAssignment(expr, operator);
-    }
-
-    // adding: ternaryExpr
-    if (match(QUESTION)) {
-      Token operator = previous();
-      return ternaryExpression(expr, operator);
-    }
-
-
-    return expr;
-  }
-
-  private Expr compoundAssignment(Expr expr, Token operator) {
-    /* compoundAssignment → identifier ( "+=" | "-=" | "*=" | "/=" | "%=" 
-    *                               | "&=" | "|=" | "^=") addition ;
-    * */
-
-  Expr value = addition();
-
-      if (expr instanceof Expr.Variable) {
-        Token name = ((Expr.Variable)expr).name;
-
-        Expr val = new Expr.Binary(expr, operator, value);
-        return new Expr.Assign(name, val);
-      }
-
-      error(operator, "Invalid compound assignment target.");
-
-      return expr;
-  
-  }
-  
-  private Expr ternaryExpression(Expr condition, Token operator) {
-      // ternaryExpr : expression "?" expression ":" expression ;
-      
-      if (condition instanceof Expr) {
-        Expr thenBranch = expression();
-        consume(COLON, "expected ':' after expression");
-        Expr elseBranch = expression();
-        return new Expr.Ternary(condition, thenBranch, elseBranch);
-      }
-
-      error(operator, "Invalid Ternary Expression target.");
-
-      return condition;
-  }
-
-
-  private Expr or() {
-    // logic_or   → logic_and ( "or" logic_and )* ;
-
-    Expr expr = and();
-
-    while (match(OR)) {
-      Token operator = previous();
-      Expr right = and();
-      expr = new Expr.Logical(expr, operator, right);
-    }
-
-    return expr;
-  }
-
-  private Expr and() {
-    // logic_and  → equality ( "and" equality )* ;
-    
-    Expr expr = equality();
-
-    while (match(AND)) {
-      Token operator = previous();
-      Expr right = equality();
-      expr = new Expr.Logical(expr, operator, right);
-    }
-
-    return expr;
   }
 
   private Stmt declaration() {
@@ -478,6 +376,180 @@ class Parser {
     return statements;
   }
 
+  private Expr expression() {
+    // expression : comma ;
+   // adding: comma 
+    return comma();
+  }
+
+  private Expr comma() {
+      // comma : assignment ( "," assignment )* ;
+      Expr left = assignment();
+      while (match(COMMA)) {
+          Token operator = previous();
+          Expr right = assignment();
+          left = new Expr.Binary(left, operator, right);
+      }
+
+      return left;
+  }
+
+  private Expr assignment() {
+    /* assignment → ( call "." )? identifier "=" assignment
+    *       | conditional
+    *       | compoundAssignment 
+    * */
+
+    Expr expr = conditional();
+
+    if (match(EQUAL)) {
+      Token equals = previous();
+      Expr value = assignment();
+
+      if (expr instanceof Expr.Variable) {
+        Token name = ((Expr.Variable)expr).name;
+        return new Expr.Assign(name, value);
+      } else if (expr instanceof Expr.Get) {
+        Expr.Get get = (Expr.Get)expr;
+        return new Expr.Set(get.object, get.name, value);
+      }
+
+      error(equals, "Invalid assignment target."); 
+    }
+    
+    // adding: compound assignment
+    if (match(PLUS_EQUAL, MINUS_EQUAL, 
+              STAR_EQUAL, SLASH_EQUAL, MOD_EQUAL,
+              BIT_AND_EQUAL, BIT_OR_EQUAL, BIT_XOR_EQUAL)) {
+      Token operator = previous();
+      return compoundAssignment(expr, operator);
+    }
+
+    return expr;
+  }
+
+  private Expr compoundAssignment(Expr expr, Token operator) {
+    /* compoundAssignment → identifier ( "+=" | "-=" | "*=" | "/=" | "%=" 
+    *                               | "&=" | "|=" | "^=") expression ;
+    * */
+
+  Expr value = expression();
+
+      if (expr instanceof Expr.Variable) {
+        Token name = ((Expr.Variable)expr).name;
+
+        Expr val = new Expr.Binary(expr, operator, value);
+        return new Expr.Assign(name, val);
+      }
+
+      error(operator, "Invalid compound assignment target.");
+
+      return expr;
+  
+  }
+   
+  private Expr conditional() {
+      // conditional : logicOr "?" expression ":" conditional;
+      // Adding: conditional
+      Expr expr = logicOr();
+      if (match(QUESTION)) {
+          Expr thenBranch = expression();
+          consume(COLON, 
+                  "Expect ':' after then branch of conditional expression.");
+          Expr elseBranch = conditional();
+          return new Expr.Ternary(expr, thenBranch, elseBranch);
+      }
+
+      return expr;
+  }
+  
+ 
+  private Expr ternaryExpression(Expr condition, Token operator) {
+      // ternaryExpr : expression "?" expression ":" expression ;
+      
+      if (condition instanceof Expr) {
+        Expr thenBranch = expression();
+        consume(COLON, "expected ':' after expression");
+        Expr elseBranch = expression();
+        return new Expr.Ternary(condition, thenBranch, elseBranch);
+      }
+
+      error(operator, "Invalid Ternary Expression target.");
+
+      return condition;
+  }
+
+
+  private Expr logicOr() {
+    // logicOr   → logicAnd ( "or" logicAnd )* ;
+
+    Expr expr = logicAnd();
+
+    while (match(OR)) {
+      Token operator = previous();
+      Expr right = logicAnd();
+      expr = new Expr.Logical(expr, operator, right);
+    }
+
+    return expr;
+  }
+
+  private Expr logicAnd() {
+    // logicAnd  → bitwiseOr ( "and" bitwiseOr )* ;
+    
+    Expr expr = bitwiseOr();
+
+    while (match(AND)) {
+      Token operator = previous();
+      Expr right = bitwiseOr();
+      expr = new Expr.Logical(expr, operator, right);
+    }
+
+    return expr;
+  }
+
+  private Expr bitwiseOr() {
+    // bitwiseOr → bitwiseXor ( ( "|" ) )* bitwiseXor ;
+    
+    Expr expr = bitwiseXor();
+
+    while (match(BIT_OR)) {
+      Token operator = previous();
+      Expr right = bitwiseXor();
+      expr = new Expr.Binary(expr, operator, right);
+    }
+
+    return expr;
+  }
+
+  private Expr bitwiseXor() {
+    // bitwiseXor → bitwiseAnd ( ( "^" ) )* bitwiseAnd ;
+    
+    Expr expr = bitwiseAnd();
+
+    while (match(BIT_XOR)) {
+      Token operator = previous();
+      Expr right = bitwiseAnd();
+      expr = new Expr.Binary(expr, operator, right);
+    }
+
+    return expr;
+  }
+
+  private Expr bitwiseAnd() {
+    // bitwiseAnd → equality ( ( "&" ) )* equality ;
+    
+    Expr expr = equality();
+
+    while (match(BIT_AND)) {
+      Token operator = previous();
+      Expr right = equality();
+      expr = new Expr.Binary(expr, operator, right);
+    }
+
+    return expr;
+  }
+
   private Expr equality() {
     // equality → comparison ( ( "!=" | "==" ) comparison )* ;
     Expr expr = comparison();
@@ -519,13 +591,26 @@ class Parser {
   }
 
   private Expr multiplication() {
-    // multiplication → unary ( ( "/" | "*" | "%" | "&" | "|" | "^") unary )* ;
+    // multiplication → modulo ( ( "/" | "*" ) modulo )* ;
+    
+    Expr expr = modulo();
+
+    while (match(SLASH, STAR)) {
+      Token operator = previous();
+      Expr right = modulo();
+      expr = new Expr.Binary(expr, operator, right);
+    }
+
+    return expr;
+  }
+
+  private Expr modulo() {
+    // modulo → unary ( ( "%" ) unary ;
     
     Expr expr = unary();
 
     // adding MOD
-    while (match(SLASH, STAR, MOD, 
-                BIT_AND, BIT_OR, BIT_XOR)) {
+    while (match(MOD)) {
       Token operator = previous();
       Expr right = unary();
       expr = new Expr.Binary(expr, operator, right);
@@ -533,6 +618,7 @@ class Parser {
 
     return expr;
   }
+
 
   private Expr unary() {
     // unary → ( "!" | "-" | "+" ) unary | call ;
@@ -574,7 +660,7 @@ class Parser {
           error(peek(), "Cannot have more than 32 arguments.");
         }
 
-        arguments.add(expression());
+        arguments.add(assignment());
       } while (match(COMMA));
     }
 
@@ -582,6 +668,18 @@ class Parser {
 
     return new Expr.Call(callee, paren, arguments);
   }
+
+  private List<Expr> expressionList() {
+    List<Expr> exprList = new ArrayList<>();
+      do { 
+
+        exprList.add(expression());
+      } while (match(COMMA));
+
+    return exprList;
+    // return new Expr.ExprList(exprList)
+  }
+
 
 
   private Expr primary() {

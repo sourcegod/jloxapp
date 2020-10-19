@@ -1,6 +1,22 @@
 Todo sur l'interpreteur java
 Date: mercredi, 06/03/19
-Last update: dimanche, 02/06/19
+Last update: vendredi, 14/06/19
+
+# Date: vendredi, 14/06/19
+* -- Ajout de l'opérateur virgule, (Comma operator) qui permet de garder la
+dernière expression, ou sans utiliser de bloc d'instruction:
+a = (expression1, expression2, expression3) :
+expression1 est évaluée, expression2 est évaluée, 
+mais seule expression3 est à la fois évaluée et
+affectée à a.
+-- ça évite aussi d'utiliser un bloc :
+if (a) b=1, c=2, d=3;
+-- Ou dans une boucle:
+while(a, a<5) {  dosomething(); }
+-- Ou dans une for-loop:
+for (low=0, high=max; low < high; low = newlow, high = newhigh) {
+    dosomething() 
+}
 
 # Date: dimanche, 02/06/19
 * -- Ajouter les bitwise opérateurs dans Expr.Binary.

@@ -610,6 +610,10 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             return (double)val;
         }
         throw new RuntimeError(expr.operator, "RuntimeError: operands must be integers.");
+
+    // Adding: comma operator
+    case COMMA: 
+        return right;
      
     }
 

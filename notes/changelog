@@ -1,5 +1,13 @@
 Lox changelog
-Last update: dimanche, 02/06/19
+Last update: vendredi, 14/06/19
+
+# Date: vendredi, 14/06/19
+-- Adding: Comma operator, 
+change ternaryExpr function to conditional.
+Refactoring modulo, and bitwise operators to keep precedence order.
+Distinct directory for *.java files and *.class files.
+
+#--------------------------------------------------------------------------------
 
 # Date: dimanche, 02/06/19
 -- Adding: bitwise operators, bitwise assignment, string comparison.
