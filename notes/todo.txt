@@ -1,6 +1,11 @@
 Todo sur l'interpreteur java
 Date: mercredi, 06/03/19
-Last update: vendredi, 14/06/19
+Last update: dimanche, 16/06/19 
+
+# Date: dimanche, 16/06/19
+* -- Ajouter les bitwise shift opérateurs. 
+comme <<, <<=, >> et >>=.
+* -- Ajouter l'opérateur exponentiel.
 
 # Date: vendredi, 14/06/19
 * -- Ajout de l'opérateur virgule, (Comma operator) qui permet de garder la

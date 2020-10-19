@@ -501,7 +501,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         }
         throw new RuntimeError(expr.operator, "Comparison not supported for operands.");
 
-      case LESS:
+      case LESSER:
         if (left instanceof Double && right instanceof Double) {
             return (double)left < (double)right;
         }
@@ -510,7 +510,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         }
         throw new RuntimeError(expr.operator, "Comparison not supported for operands.");
 
-      case LESS_EQUAL:
+      case LESSER_EQUAL:
         if (left instanceof Double && right instanceof Double) {
             return (double)left <= (double)right;
         }
@@ -572,12 +572,20 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         checkNumberOperands(expr.operator, left, right);
         return (double)left * (double)right;
 
+      // Adding: EXP
+      case EXP:
+      case EXP_EQUAL:
+        checkNumberOperands(expr.operator, left, right);
+        return Math.pow((double)left, (double)right);
+
+
     // adding: MOD, MOD_EQUAL
     case MOD:
     case MOD_EQUAL:
         checkNumberOperands(expr.operator, left, right);
         if ((double)right != 0) return (double)left % (double)right;
         // adding: error: Division by zero
+
         throw new RuntimeError(expr.operator,  "Error: Division by zero.");
 
     // Adding: bitwise operators
@@ -607,6 +615,26 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             Double dLeft = (Double)left;
             Double dRight = (Double)right;
             int val = dLeft.intValue() ^ dRight.intValue();
+            return (double)val;
+        }
+        throw new RuntimeError(expr.operator, "RuntimeError: operands must be integers.");
+    
+    case BIT_LEFT:
+    case BIT_LEFT_EQUAL:
+        if (isInteger(left) && isInteger(right)) {
+            Double dLeft = (Double)left;
+            Double dRight = (Double)right;
+            int val = dLeft.intValue() << dRight.intValue();
+            return (double)val;
+        }
+        throw new RuntimeError(expr.operator, "RuntimeError: operands must be integers.");
+
+    case BIT_RIGHT:
+    case BIT_RIGHT_EQUAL:
+        if (isInteger(left) && isInteger(right)) {
+            Double dLeft = (Double)left;
+            Double dRight = (Double)right;
+            int val = dLeft.intValue() >> dRight.intValue();
             return (double)val;
         }
         throw new RuntimeError(expr.operator, "RuntimeError: operands must be integers.");

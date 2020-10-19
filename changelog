@@ -1,5 +1,11 @@
 Lox changelog
-Last update: vendredi, 14/06/19
+Last update: dimanche, 16/06/19 
+
+# Date: dimanche, 16/06/19
+-- Adding: Exponent operator, bitwise shift operators
+Refactoring precedence order operations.
+
+#--------------------------------------------------------------------------------
 
 # Date: vendredi, 14/06/19
 -- Adding: Comma operator, 

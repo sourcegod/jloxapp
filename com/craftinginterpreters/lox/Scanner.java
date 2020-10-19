@@ -85,13 +85,39 @@ class Scanner {
       case '-': addToken(match('=') ? MINUS_EQUAL : MINUS); break;
       case '+': addToken(match('=') ? PLUS_EQUAL : PLUS); break;
       case ';': addToken(SEMICOLON); break;
-      case '*': addToken(match('=') ? STAR_EQUAL : STAR); break; 
+      
+      // Adding: EXP
+      case '*': 
+        if (match('=')) addToken(STAR_EQUAL);
+        else if (match('*')) {
+            if (match('=')) addToken(EXP_EQUAL);
+            else addToken(EXP);
+        }
+        else addToken(STAR);
+        break; 
 
       case '!': addToken(match('=') ? BANG_EQUAL : BANG); break;
       case '=': addToken(match('=') ? EQUAL_EQUAL : EQUAL); break;
-      case '<': addToken(match('=') ? LESS_EQUAL : LESS); break;
-      case '>': addToken(match('=') ? GREATER_EQUAL : GREATER); break;
       
+      // Adding: bitwise shift operators
+      case '<': 
+        if (match('=')) addToken(LESSER_EQUAL);
+        else if (match('<')) {
+            if (match('=')) addToken(BIT_LEFT_EQUAL);
+            else addToken(BIT_LEFT);
+        }
+        else addToken(LESSER);
+        break; 
+
+      case '>': 
+        if (match('=')) addToken(GREATER_EQUAL);
+        else if (match('>')) {
+            if (match('=')) addToken(BIT_RIGHT_EQUAL);
+            else addToken(BIT_RIGHT);
+        }
+        else addToken(GREATER);
+        break; 
+
       // adding: SLASH_EQUAL and MOD, MOD_EQUAL
       case '/':
         if (match('/')) {

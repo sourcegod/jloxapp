@@ -18,7 +18,7 @@ class Parser {
   }
 
   List<Stmt> parse() {
-    /* Grammar Comma operator
+    /* Grammar Exponentiation and Bitwise Shift operators
      *
     * program     → declaration* EOF ;
     *
@@ -80,7 +80,8 @@ class Parser {
     *       | compoundAssignment ;
     *
     * compoundAssignment → identifier ( "+=" | "-=" | "*=" | "/=" | "%=" 
-    *                               | "&=" | "|=" | "^=") addition ;
+    *                               | "&=" | "|=" | "^="
+    *                               | "**=" | "<<=" | ">>=" ) expression ;
     *
     * conditional : logicOr "?" expression ":" conditional;
     *
@@ -96,13 +97,17 @@ class Parser {
     *
     * equality → comparison ( ( "!=" | "==" ) comparison )* ;
     * 
-    * comparison → addition ( ( ">" | ">=" | "<" | "<=" ) addition )* ;
+    * comparison → bitwiseShift ( ( ">" | ">=" | "<" | "<=" ) bitwiseShift )* ;
+    *
+    * bitwiseShift → addition ( ( "<<" | ">>" ) addition )* ;
     * 
     * addition → multiplication ( ( "+" | "-" ) multiplication )* ;
     *
     * multiplication → modulo ( ( "/" | "*" ) modulo )* ;
     *
-    * modulo → unary ( ( "%" ) unary ;
+    * modulo → exponentiation ( ( "%" ) exponentiation )* ;
+    *
+    * exponentiation → unary ( ( "**" ) unary )* ;
     * 
     * unary → ( "!" | "-" | "+" | "~") unary | call ;
     *
@@ -161,7 +166,7 @@ class Parser {
 
     Token name = consume(IDENTIFIER, "Expect class name.");
     Expr.Variable superclass = null;
-    if (match(LESS)) {
+    if (match(LESSER)) {
       consume(IDENTIFIER, "Expect superclass name.");
       superclass = new Expr.Variable(previous());
     }
@@ -420,7 +425,9 @@ class Parser {
     // adding: compound assignment
     if (match(PLUS_EQUAL, MINUS_EQUAL, 
               STAR_EQUAL, SLASH_EQUAL, MOD_EQUAL,
-              BIT_AND_EQUAL, BIT_OR_EQUAL, BIT_XOR_EQUAL)) {
+              BIT_AND_EQUAL, BIT_OR_EQUAL, BIT_XOR_EQUAL,
+              BIT_LEFT_EQUAL, BIT_RIGHT_EQUAL,
+              EXP_EQUAL)) {
       Token operator = previous();
       return compoundAssignment(expr, operator);
     }
@@ -430,7 +437,8 @@ class Parser {
 
   private Expr compoundAssignment(Expr expr, Token operator) {
     /* compoundAssignment → identifier ( "+=" | "-=" | "*=" | "/=" | "%=" 
-    *                               | "&=" | "|=" | "^=") expression ;
+    *                               | "&=" | "|=" | "^=" 
+    *                               | "**=" | "<<=" | ">>=" ) expression ;
     * */
 
   Expr value = expression();
@@ -564,10 +572,25 @@ class Parser {
   }
 
   private Expr comparison() {
-    // comparison → addition ( ( ">" | ">=" | "<" | "<=" ) addition )* ;
+    // comparison → bitwiseShift ( ( ">" | ">=" | "<" | "<=" ) bitwiseShift )* ;
+    
+    // Adding: bitwiseShift operators
+    Expr expr = bitwiseShift();
+
+    while (match(GREATER, GREATER_EQUAL, LESSER, LESSER_EQUAL)) {
+      Token operator = previous();
+      Expr right = bitwiseShift();
+      expr = new Expr.Binary(expr, operator, right);
+    }
+
+    return expr;
+  }
+
+  private Expr bitwiseShift() {
+    // bitwiseShift → addition ( ( "<<" | ">>" ) addition )* ;
     Expr expr = addition();
 
-    while (match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
+    while (match(BIT_LEFT, BIT_RIGHT)) {
       Token operator = previous();
       Expr right = addition();
       expr = new Expr.Binary(expr, operator, right);
@@ -575,6 +598,7 @@ class Parser {
 
     return expr;
   }
+
 
   private Expr addition() {
     // addition → multiplication ( ( "+" | "-" ) multiplication )* ;
@@ -605,12 +629,27 @@ class Parser {
   }
 
   private Expr modulo() {
-    // modulo → unary ( ( "%" ) unary ;
+    // modulo → exponentiation ( ( "%" ) exponentiation )* ;
     
-    Expr expr = unary();
+    Expr expr = exponentiation();
 
     // adding MOD
     while (match(MOD)) {
+      Token operator = previous();
+      Expr right = exponentiation();
+      expr = new Expr.Binary(expr, operator, right);
+    }
+
+    return expr;
+  }
+
+  private Expr exponentiation() {
+    // exponentiation → unary ( ( "**" ) unary )* ;
+    
+    Expr expr = unary();
+
+    // Adding: exponent
+    while (match(EXP)) {
       Token operator = previous();
       Expr right = unary();
       expr = new Expr.Binary(expr, operator, right);
@@ -618,6 +657,7 @@ class Parser {
 
     return expr;
   }
+
 
 
   private Expr unary() {
