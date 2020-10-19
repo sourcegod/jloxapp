@@ -1,0 +1,7 @@
+fun even(x) { 
+  return (x%2 == 0 ? "yes" : "no"); 
+}
+
+print even(123);
+print even(44);
+

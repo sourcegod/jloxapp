@@ -18,6 +18,7 @@ public class GenerateAst {
       "Assign   : Token name, Expr value",
 
       "Binary   : Expr left, Token operator, Expr right",
+      "Ternary   : Expr condition, Expr thenBranch, Expr elseBranch",
 
       "Call     : Expr callee, Token paren, List<Expr> arguments",
 
@@ -51,7 +52,7 @@ public class GenerateAst {
 
       "While      : Expr condition, Stmt body",
 
-      "Break      : Token token"
+      "Break      : Token keyword"
 
     ));
 

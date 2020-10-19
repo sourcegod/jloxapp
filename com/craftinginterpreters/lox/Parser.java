@@ -70,10 +70,13 @@ class Parser {
     * assignment → identifier "=" assignment
     *       | logic_or 
     *       | compoundAssignment ;
+    *       | ternaryExpr ; 
     *
     * logic_or   → logic_and ( "or" logic_and )* ;
     *
     * compoundAssignment → identifier ( "+=" | "-=" | "*=" | "/=" | "%=" ) addition ;
+    *
+    * ternaryExpr : expression "?" expression ":" expression ;
     *
     * logic_and  → equality ( "and" equality )* ;
     *
@@ -139,6 +142,13 @@ class Parser {
       return compoundAssignment(expr, operator);
     }
 
+    // adding: ternaryExpr
+    if (match(QUESTION)) {
+      Token operator = previous();
+      return ternaryExpression(expr, operator);
+    }
+
+
     return expr;
   }
 
@@ -162,6 +172,22 @@ class Parser {
   
   }
   
+  private Expr ternaryExpression(Expr condition, Token operator) {
+      // ternaryExpr : expression "?" expression ":" expression ;
+      
+      if (condition instanceof Expr) {
+        Expr thenBranch = expression();
+        consume(COLON, "expected ':' after expression");
+        Expr elseBranch = expression();
+        return new Expr.Ternary(condition, thenBranch, elseBranch);
+      }
+
+      error(operator, "Invalid Ternary Expression target.");
+
+      return condition;
+  }
+
+
   private Expr or() {
     // logic_or   → logic_and ( "or" logic_and )* ;
 

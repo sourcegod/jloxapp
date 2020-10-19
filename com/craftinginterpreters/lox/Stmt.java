@@ -117,15 +117,15 @@ abstract class Stmt {
     final Stmt body;
   }
   static class Break extends Stmt {
-    Break(Token token) {
-      this.token = token;
+    Break(Token keyword) {
+      this.keyword = keyword;
     }
 
     <R> R accept(Visitor<R> visitor) {
       return visitor.visitBreakStmt(this);
     }
 
-    final Token token;
+    final Token keyword;
   }
 
   abstract <R> R accept(Visitor<R> visitor);

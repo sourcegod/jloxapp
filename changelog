@@ -1,6 +1,9 @@
 Last update: dimanche, 24/03/19
 # Date: dimanche, 24/03/19
-Adding: resolver class for semantic analyer
+Adding: Ternary operator,
+resolver class for semantic analyzer
+Modifications to visitUnaryExpr to returns "true" for "!0".
+
 
 #--------------------------------------------------------------------------------
 

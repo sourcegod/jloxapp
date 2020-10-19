@@ -121,6 +121,11 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   private boolean isTruthy(Object object) {
     if (object == null) return false;
+    if (object instanceof Double 
+        && Double.valueOf(object.toString()) == 0) {
+      // System.out.println("Je passe ici");
+      return false; 
+    }
     if (object instanceof Boolean) return (boolean)object;
     
     return true;
@@ -176,13 +181,6 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
       for (Stmt statement : statements) {
         // System.out.println(statement.getClass().getName());
-        if ( statement instanceof Stmt.Break) { 
-          // System.out.println("un break statement");
-          // this.environment = previous;
-          // loopStack.peek().isBreak = true;
-          // break;
-        }
-        
         // System.out.println("je passe ici");
         execute(statement);
       }
@@ -269,12 +267,12 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     // loopStack.peek().isBreak = true;
     // throw new RuntimeException("No while statement"); // RuntimeError(token, "No while statement");
     String msg = "";
-    if (stmt.token.lexeme.equals("break")) {
+    if (stmt.keyword.lexeme.equals("break")) {
       msg = "Error: Break must with while loop";
-      throw new RuntimeError(stmt.token, msg);
-    } else if (stmt.token.lexeme.equals("continue")) {
+      throw new RuntimeError(stmt.keyword, msg);
+    } else if (stmt.keyword.lexeme.equals("continue")) {
       msg = "Error: Continue must with while loop";
-      throw new RuntimeError(stmt.token, msg);
+      throw new RuntimeError(stmt.keyword, msg);
     }
 
     return null;
@@ -368,7 +366,17 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     // Unreachable.                                
     return null;
   }
-  
+  // adding: visitTernaryExpr
+  @Override
+  public Object visitTernaryExpr(Expr.Ternary expr) {
+    if (isTruthy(evaluate(expr.condition))) {
+      return evaluate(expr.thenBranch);
+    }
+    
+    return evaluate(expr.elseBranch);
+
+  }
+
   @Override
   public Object visitCallExpr(Expr.Call expr) {
     Object callee = evaluate(expr.callee);
