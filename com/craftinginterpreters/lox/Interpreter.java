@@ -5,11 +5,6 @@ import java.util.List;
 
 import java.util.Stack;
 
-class LoopState {
-  public Boolean isBreak = false;
-  public Boolean isContinue = false;
-}
-
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   final Environment globals = new Environment();
@@ -189,7 +184,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Void visitFunctionStmt(Stmt.Function stmt) {
-    LoxFunction function = new LoxFunction(stmt);
+    LoxFunction function = new LoxFunction(stmt, environment);
     environment.define(stmt.name.lexeme, function);
     return null;
   }

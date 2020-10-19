@@ -1,3 +1,8 @@
+# Date: samedi, 23/03/19
+Adding: closure function.
+
+#--------------------------------------------------------------------------------
+
 # Date: vendredi, 22/03/19
 Adding: println native function, improve break and continue statement
 Functions: visitBreak, breakStatement, printResult, 
