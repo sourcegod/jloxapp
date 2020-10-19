@@ -1,6 +1,11 @@
 Todo sur l'interpreteur java
 Date: mercredi, 06/03/19
-Last update: samedi, 23/03/19
+Last update: mardi, 14/05/19
+# Date: mardi, 14/05/19
+-- Chapitre 12 classe
+Ajouter la prise en charge de variable static dans la classe.
+-- Ajouter la prise en charge des propriétés qui appellent une methode de la
+classe lorsque la propriété est invoquer.
 
 # Date: dimanche, 24/03/19
 * -- Corriger la fonction unaryExpr pour que !0 renvoie true et non false.
@@ -9,9 +14,9 @@ Last update: samedi, 23/03/19
 De manière à réaliser ce code:
 fun isEven(n) { return 1&n; }
 
--- Etendre le résolver pour rapporter une erreur si une variable n'est jamais
+* -- Etendre le résolver pour rapporter une erreur si une variable n'est jamais
 utilisée.
--- Etendre le résolver pour recher les variables locales par index dans un
+-- Etendre le résolver pour rechercher les variables locales par index dans un
 tableau plutot que dans un map ce qui rend la recherche plus lente.
 
 # Date: samedi, 23/03/19

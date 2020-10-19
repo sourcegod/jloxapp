@@ -1,0 +1,91 @@
+/* Grammar class
+     *
+    * program     → declaration* EOF ;
+    *
+    * declaration → classDecl
+    *       | funDecl
+    *       | VarDecl
+    *       | statement ;
+    *
+    * classDecl   → "class" IDENTIFIER "{" function* "}" ;
+    *
+    * funDecl  → "fun" function ;
+    *
+    * function → IDENTIFIER "(" functionBody ")" ;
+    *
+    * functionBody → "(" parameters? ")" block ;
+    *
+    * parameters → IDENTIFIER ( "," IDENTIFIER )* ;
+    *
+    * varDecl → "var" IDENTIFIER ( "=" expression )? ";" ;
+    *
+    * statement → exprStmt
+    *           | forStmt
+    *           | ifStmt
+    *           | printStmt
+    *           | returnStmt
+    *           | whileStmt
+    *           | breakStmt
+    *           | continueStmt
+    *           | block ;
+    *
+    * exprStmt  → expression ";" ;
+    *
+    *  forStmt   → "for" "(" ( varDecl | exprStmt | ";" )
+    *                  expression? ";"
+    *                  expression? ")" statement ;
+    *
+    * ifStmt    → "if" "(" expression ")" statement ( "else" statement )? ;
+    *
+    * printStmt → "print" expression ";" ;
+    *
+    * returnStmt → "return" expression? ";" ;
+    *
+    * whileStmt → "while" "(" expression ")" statement ;
+    *
+    * breakStmt → "break" ";" 
+    *             | "continue" ";" ;
+    *
+    * continueStmt → "continue" ";" ;
+    *
+    * block     → "{" declaration* "}" ;
+    *
+    * expression → assignment ;
+    *
+    * assignment → ( call "." )? identifier "=" assignment
+    *       | logic_or 
+    *       | compoundAssignment ;
+    *       | ternaryExpr ; 
+    *
+    * logic_or   → logic_and ( "or" logic_and )* ;
+    *
+    * compoundAssignment → identifier ( "+=" | "-=" | "*=" | "/=" | "%=" ) addition ;
+    *
+    * ternaryExpr : expression "?" expression ":" expression ;
+    *
+    * logic_and  → equality ( "and" equality )* ;
+    *
+    * equality → comparison ( ( "!=" | "==" ) comparison )* ;
+    * 
+    * comparison → addition ( ( ">" | ">=" | "<" | "<=" ) addition )* ;
+    * 
+    * addition → multiplication ( ( "+" | "-" ) multiplication )* ;
+    *
+    * multiplication → unary ( ( "/" | "*" | "%" ) unary )* ;
+    * 
+    * unary → ( "!" | "-" | "+" ) unary | call ;
+    *
+    * call → primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
+    *
+    * primary → "true" | "false" | "nil"
+    *      | NUMBER | STRING
+    *        | "(" expression ")"
+    *        | this
+    *        | IDENTIFIER
+    *        | lambda ;
+    *
+    * arguments → expression ( "," expression )* ;
+    *
+    * */
+
+

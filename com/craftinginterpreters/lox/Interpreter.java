@@ -15,7 +15,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   Object outputResult;
   Boolean isPrint = false;
-  boolean isDebug = true;
+  boolean isDebug = false;
   String classTitle = "Interpreter: ";
 
   Interpreter() {
@@ -122,6 +122,24 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     return evaluate(expr.right);
+  }
+
+  @Override
+  public Object visitSetExpr(Expr.Set expr) {
+    Object object = evaluate(expr.object);
+
+    if (!(object instanceof LoxInstance)) { 
+      throw new RuntimeError(expr.name, "Only instances have fields.");
+    }
+
+    Object value = evaluate(expr.value);
+    ((LoxInstance)object).set(expr.name, value);
+    return value;
+  }
+
+  @Override
+  public Object visitThisExpr(Expr.This expr) {
+    return lookUpVariable(expr.keyword, expr);
   }
 
   @Override
@@ -251,6 +269,26 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   }
 
   @Override
+  public Void visitClassStmt(Stmt.Class stmt) {
+    debug("visitClassStmt");
+    environment.define(stmt.name.lexeme, null);
+
+    Map<String, LoxFunction> methods = new HashMap<>();
+    for (Stmt.Function method : stmt.methods) {
+      // Adding: params for lambda function in LoxFunction object
+      LoxFunction function = new LoxFunction(method.name.lexeme, method.function, environment, 
+              method.name.lexeme.equals("init"));
+      methods.put(method.name.lexeme, function);
+    }
+
+    LoxClass klass = new LoxClass(stmt.name.lexeme, methods);
+
+    environment.assign(stmt.name, klass);
+
+    return null;
+  }
+
+  @Override
   public Void visitExpressionStmt(Stmt.Expression stmt) {
     debug("visitExpressionStmt: expression : " + getClassName(stmt.expression));
     evaluate(stmt.expression);
@@ -260,8 +298,9 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   @Override
   public Void visitFunctionStmt(Stmt.Function stmt) {
     debug("visitFunctionStmt : name: " + stmt.name.lexeme);
+    // Adding: params for lambda function
     LoxFunction function = new LoxFunction(stmt.name.lexeme, stmt.function, 
-        environment);
+        environment, false);
 
     environment.define(stmt.name.lexeme, function);
     return null;
@@ -479,12 +518,24 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     return function.call(this, arguments);
   }
   
+  @Override
+  public Object visitGetExpr(Expr.Get expr) {
+    Object object = evaluate(expr.object);
+    if (object instanceof LoxInstance) {
+      return ((LoxInstance) object).get(expr.name);
+    }
+
+    throw new RuntimeError(expr.name,
+        "Only instances have properties.");
+  }
+
   public Object visitFunctionExpr(Expr.Function expr) {
+    // Adding: for lambda function
     debug("visitFunctionExpr : " + getClassName(expr));
     debug("visitFunctionExpr : body " + getClassName(expr.body));
     // executeBlock(expr.body, new Environment(environment));
 
- return new LoxFunction(null, expr, environment);
+ return new LoxFunction(null, expr, environment, false);
 
   }
 
