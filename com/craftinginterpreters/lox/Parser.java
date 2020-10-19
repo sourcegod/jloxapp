@@ -18,7 +18,7 @@ class Parser {
   }
 
   List<Stmt> parse() {
-    /* Grammar Exponentiation and Bitwise Shift operators
+    /* Grammar for prefix and postfix operators
      *
     * program     → declaration* EOF ;
     *
@@ -103,18 +103,23 @@ class Parser {
     * 
     * addition → multiplication ( ( "+" | "-" ) multiplication )* ;
     *
-    * multiplication → modulo ( ( "/" | "*" ) modulo )* ;
+    * multiplication → unary ( ( "/" | "*" | "%" ) unary )* ;
     *
-    * modulo → exponentiation ( ( "%" ) exponentiation )* ;
+    * unary → ( "!" | "-" | "+" | "~") unary 
+    *           | exponentiation ;
     *
-    * exponentiation → unary ( ( "**" ) unary )* ;
-    * 
-    * unary → ( "!" | "-" | "+" | "~") unary | call ;
+    * exponentiation → prefix ( ( "**" ) unary )* ;
+    *
+    * prefix → ( "--" | "++" ) primary 
+    *           | postfix ;
+    *
+    * postfix → primary ( "--" | "++" ) 
+    *           | call ;
     *
     * call → primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
     *
     * primary → "true" | "false" | "nil"
-    *      | NUMBER | STRING
+    *        | NUMBER | STRING
     *        | "(" expression ")"
     *        | this
     *        | IDENTIFIER
@@ -632,13 +637,13 @@ class Parser {
   }
 
   private Expr multiplication() {
-    // multiplication → modulo ( ( "/" | "*" ) modulo )* ;
+    // multiplication → unary ( ( "/" | "*" | "%" ) unary )* ;
     
-    Expr expr = exponentiation();
+    Expr expr = unary();
 
     while (match(SLASH, STAR, MOD)) {
       Token operator = previous();
-      Expr right = exponentiation();
+      Expr right = unary();
       expr = new Expr.Binary(expr, operator, right);
     }
 
@@ -646,6 +651,7 @@ class Parser {
   }
 
   private Expr modulo() {
+    // Deprecated: not used
     // modulo → exponentiation ( ( "%" ) exponentiation )* ;
     
     Expr expr = exponentiation();
@@ -660,10 +666,25 @@ class Parser {
     return expr;
   }
 
+  private Expr unary() {
+    /* unary → ( "!" | "-" | "+" | "~" ) unary 
+     *          | exponentiation ;
+     * */
+
+    // adding: plus, bit_not, operator
+    if (match(BANG, MINUS, PLUS, BIT_NOT)) {
+      Token operator = previous();
+      Expr right = unary();
+      return new Expr.Unary(operator, right, false);
+    }
+
+    return exponentiation();
+  }
+
   private Expr exponentiation() {
-    // exponentiation → unary ( ( "**" ) unary )* ;
+    // exponentiation → prefix ( ( "**" ) unary )* ;
     
-    Expr expr = unary();
+    Expr expr = prefix();
 
     // Adding: exponent
     while (match(EXP)) {
@@ -675,16 +696,39 @@ class Parser {
     return expr;
   }
 
-  private Expr unary() {
-    // unary → ( "!" | "-" | "+" ) unary | call ;
-    // adding: plus, bit_not, operator
-    if (match(BANG, MINUS, PLUS, BIT_NOT)) {
+  private Expr prefix() {
+    /* prefix → ( "--" | "++" ) primary 
+     *          | postfix ;
+     * */
+    
+    // Adding: prefix operators
+    if (match(MINUS_MINUS, PLUS_PLUS)) {
       Token operator = previous();
-      Expr right = unary();
-      return new Expr.Unary(operator, right);
+      Expr right = primary();
+      return new Expr.Unary(operator, right, false);
+    }
+
+    return postfix();
+
+  }
+
+  private Expr postfix() {
+    /* postfix → primary ( "--" | "++" ) 
+     *           | call ;
+     * */
+    
+    // Adding: postfix operators
+    // System.out.println("Avant postfix: " + peek().type + ", " + current);
+    if (matchNext(MINUS_MINUS, PLUS_PLUS)) {
+        Token operator = peek();
+        current--;
+        Expr left = primary();
+        advance();
+        return new Expr.Unary(operator, left, true);
     }
 
     return call();
+
   }
 
   private Expr call() {
@@ -793,6 +837,17 @@ class Parser {
   private boolean match(TokenType... types) {
     for (TokenType type : types) {
       if (check(type)) {
+        advance();
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private boolean matchNext(TokenType... types) {
+    for (TokenType type : types) {
+      if (checkNext(type)) {
         advance();
         return true;
       }

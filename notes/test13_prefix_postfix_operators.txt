@@ -1,0 +1,23 @@
+var i=0
+
+
+
+print "variable i = " + i
+
+fun test() { 
+   while (i <= 10)
+   { print "now i = " + i
+   i++ 
+   if ( i > 6) 
+   { print "I go to break"; break }
+   }
+   return i
+}
+
+println("Before while and postfix: ")
+test()
+print "after while and postfix"
+
+print "Before prefix --, i = " + i;
+--i
+print "after prefix: i = " + i

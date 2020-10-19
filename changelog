@@ -1,5 +1,10 @@
 Lox changelog
-Last update: dimanche, 23/06/19 
+Last update: mardi, 25/06/19 
+
+# Date: mardi, 25/06/19
+-- Adding: prefix and postfix operators.
+
+#--------------------------------------------------------------------------------
 
 # Date: dimanche, 23/06/19
 -- Adding: automatic semicolon insertion.

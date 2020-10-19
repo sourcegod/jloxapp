@@ -96,8 +96,18 @@ class Scanner {
       
       case ',': addToken(COMMA); break;
       case '.': addToken(DOT); break;
-      case '-': addToken(match('=') ? MINUS_EQUAL : MINUS); break;
-      case '+': addToken(match('=') ? PLUS_EQUAL : PLUS); break;
+    
+      // Adding: prefix and postfix operators  
+      case '-': 
+        if (match('=')) addToken(MINUS_EQUAL);
+        else addToken(match('-') ? MINUS_MINUS : MINUS);
+        break;
+      
+      case '+': 
+        if (match('=')) addToken(PLUS_EQUAL);
+        else addToken(match('+') ? PLUS_PLUS : PLUS);
+        break;
+                
       case ';': addToken(SEMICOLON); break;
       
       // Adding: EXP

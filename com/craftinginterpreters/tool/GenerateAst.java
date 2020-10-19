@@ -39,7 +39,7 @@ public class GenerateAst {
 
       "This     : Token keyword",
 
-      "Unary    : Token operator, Expr right",
+      "Unary    : Token operator, Expr right, Boolean isPostfix",
 
       "Variable : Token name"
 

@@ -1,6 +1,9 @@
 Todo sur l'interpreteur java
 Date: mercredi, 06/03/19
-Last update: dimanche, 23/06/19
+Last update: mardi, 25/06/19
+
+# Date: mardi, 25/06/19
+* -- Ajouter les opérateurs de prefix et postfix (-- et ++).
 
 # Date: dimanche, 23/06/19
 * -- Ajouter l'insertion automatique des point-virgules, ";".

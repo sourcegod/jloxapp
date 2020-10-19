@@ -180,17 +180,43 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
       case MINUS:
         checkNumberOperand(expr.operator, right);
         return -(double)right;
-   
+
       case PLUS:
         checkNumberOperand(expr.operator, right);
         return (double)right;
-    
+
+      // prefix operators
+      case MINUS_MINUS:
+        if (expr.right instanceof Expr.Variable) {
+            checkNumberOperand(expr.operator, right);
+            double val = (double)right;
+            Expr.Variable  var = (Expr.Variable)expr.right;
+            environment.assign(var.name, val -1);
+            if (expr.isPostfix) return val;
+            else return val -1;
+        }
+        throw new RuntimeError(expr.operator,
+            "Operand of a decrement operator must be a variable.");
+      
+      case PLUS_PLUS:
+        if (expr.right instanceof Expr.Variable) {
+            checkNumberOperand(expr.operator, right);
+            double val = (double)right;
+            Expr.Variable  var = (Expr.Variable)expr.right;
+            environment.assign(var.name, val +1);
+            if (expr.isPostfix) return val;
+            else return val +1;
+        }
+        throw new RuntimeError(expr.operator,
+            "Operand of a decrement operator must be a variable.");
+ 
       case BIT_NOT:
         if (isInteger(right)) {
             Double dRight = (Double)right;
             return (double)(~dRight.intValue());
         }
-        throw new RuntimeError(expr.operator, "RuntimeError: operand must be integer.");
+
+    throw new RuntimeError(expr.operator, "RuntimeError: operand must be integer.");
   
     }
 
