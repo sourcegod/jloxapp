@@ -133,12 +133,11 @@ class Parser {
     }
     
     // adding: compound assignment
-    if (match(PLUS_EQUAL, MINUS_EQUAL, STAR_EQUAL, 
-                          SLASH_EQUAL, MODULO_EQUAL)) {
+    if (match(PLUS_EQUAL, MINUS_EQUAL, 
+              STAR_EQUAL, SLASH_EQUAL, MODULO_EQUAL)) {
       Token operator = previous();
       return compoundAssignment(expr, operator);
     }
-
 
     return expr;
   }
@@ -162,7 +161,7 @@ class Parser {
       return expr;
   
   }
-
+  
   private Expr or() {
     // logic_or   → logic_and ( "or" logic_and )* ;
 

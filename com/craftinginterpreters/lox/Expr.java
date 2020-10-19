@@ -13,6 +13,7 @@ abstract class Expr {
     R visitUnaryExpr(Unary expr);
     R visitVariableExpr(Variable expr);
   }
+
   static class Assign extends Expr {
     Assign(Token name, Expr value) {
       this.name = name;
@@ -43,6 +44,7 @@ abstract class Expr {
     final Token operator;
     final Expr right;
   }
+
   static class Call extends Expr {
     Call(Expr callee, Token paren, List<Expr> arguments) {
       this.callee = callee;

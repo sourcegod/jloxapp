@@ -100,6 +100,10 @@ class Scanner {
         }
         break;
       case '%': addToken(match('=') ? MODULO_EQUAL : MODULO); break;
+      
+      // adding: colon, question tokens
+      case ':': addToken(COLON); break;
+      case '?': addToken(QUESTION); break;
 
       case ' ':
       case '\r':
