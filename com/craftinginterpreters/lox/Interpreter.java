@@ -85,9 +85,15 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
       case MINUS:
         checkNumberOperand(expr.operator, right);
-
         return -(double)right;
+   
+      case PLUS:
+        checkNumberOperand(expr.operator, right);
+        return (double)right;
+    
+ 
     }
+
 
     // Unreachable.                              
     return null;
@@ -106,6 +112,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   private boolean isTruthy(Object object) {
     if (object == null) return false;
     if (object instanceof Boolean) return (boolean)object;
+    
     return true;
   }
 
@@ -291,10 +298,12 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
       case EQUAL_EQUAL: return isEqual(left, right);
 
       case MINUS:
+      case MINUS_EQUAL:
         checkNumberOperands(expr.operator, left, right);
         return (double)left - (double)right;
 
       case PLUS:
+      case PLUS_EQUAL:
         if (left instanceof Double && right instanceof Double) {
           return (double)left + (double)right;
         } 
@@ -314,12 +323,26 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         throw new RuntimeError(expr.operator,
         "Operands must be numbers or strings.");
 
+      // adding: SLASH_EQUAL, STAR_EQUAL, MODULO, MODULO_EQUAL
       case SLASH:
+      case SLASH_EQUAL:
         checkNumberOperands(expr.operator, left, right);
-        return (double)left / (double)right;
+        if ((double)right != 0) return (double)left / (double)right;
+        // adding: error: Division by zero
+        throw new RuntimeError(expr.operator, 
+            "Error: Division by zero.");
+
       case STAR:
+      case STAR_EQUAL:
         checkNumberOperands(expr.operator, left, right);
         return (double)left * (double)right;
+
+    // adding: MODULO, MODULO_EQUAL
+    case MODULO:
+      case MODULO_EQUAL:
+        checkNumberOperands(expr.operator, left, right);
+        return (double)left % (double)right;
+    
     }
 
     // Unreachable.                                

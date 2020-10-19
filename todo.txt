@@ -1,0 +1,40 @@
+Todo sur l'interpreteur java
+Date: mercredi, 06/03/19
+Last update: samedi, 23/03/19
+
+# Date: samedi, 23/03/19
+-- Implementer les fonctions anonymes ou lambda.
+
+
+* -- Implementer l'oprateur +=, -=, *=, /=, %= etc...
+
+-- Implementer les commentaires imbriqués.
+-- ajout de opérateur ternaire dans la classe expression
+-- Ajouter la prise en charge de plusieurs expressions séparées par une
+virgule.
+Ainsi, on pourra passer plusieurs expressions à l'instruction print.
+
+* -- concaténation de chaine de caractère avec nombre.
+* -- Ajout du plus dans les unary opérations.
+* -- Gestion de l'erreur pour la division par zéro.
+* -- Reporter un runtime error dans visitbinary pour la division par zéro.
+
+Date: lundi, 11/03/19
+* -- Créer un lox_02 sans environment, ni variable ou assignment, juste avec
+l'instruction print comme étant la dernière fonctionalité ajoutée.
+
+* -- Ajouter un affichage dans l'interpreter pour une expression ou une
+instruction rentrée.
+Si c'est une instruction, l'executer, si c'est une expression,
+l'évaluer, et l'afficher.
+
+* -- Voir où on peut ajouter une runtime-error si une variable n'a pas été
+initialisée avant de l'afficher au lieu qu'elle soit implicitement initialiser
+par défaut.
+Date: mercredi, 13/03/19
+* -- Loop statements
+Ajouter les instructions break et continue  pour while et for.
+* -- ajouter les instructions break
+* -- Ajouter l'instruction continue
+
+

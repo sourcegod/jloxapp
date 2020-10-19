@@ -1,5 +1,9 @@
+Last update: dimanche, 24/03/19
+
 # Date: samedi, 23/03/19
 Adding: closure function.
+Operators: +unary operator, +=, -=, *=, /=, %= 
+and compoundAssignment function.
 
 #--------------------------------------------------------------------------------
 

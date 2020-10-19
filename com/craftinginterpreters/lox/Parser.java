@@ -58,7 +58,8 @@ class Parser {
     *
     * whileStmt → "while" "(" expression ")" statement ;
     *
-    * breakStmt → "break" ";" ;
+    * breakStmt → "break" ";" 
+    *             | "continue" ";" ;
     *
     * continueStmt → "continue" ";" ;
     *
@@ -67,9 +68,12 @@ class Parser {
     * expression → assignment ;
     *
     * assignment → identifier "=" assignment
-    *       | logic_or ;
+    *       | logic_or 
+    *       | compoundAssignment ;
     *
     * logic_or   → logic_and ( "or" logic_and )* ;
+    *
+    * compoundAssignment → identifier ( "+=" | "-=" | "*=" | "/=" | "%=" ) addition ;
     *
     * logic_and  → equality ( "and" equality )* ;
     *
@@ -77,11 +81,11 @@ class Parser {
     * 
     * comparison → addition ( ( ">" | ">=" | "<" | "<=" ) addition )* ;
     * 
-    * addition : multiplication ( ( "+" | "-" ) multiplication )* ;
+    * addition → multiplication ( ( "+" | "-" ) multiplication )* ;
+    *
+    * multiplication → unary ( ( "/" | "*" | "%" ) unary )* ;
     * 
-    * multiplication : unary ( ( "/" | "*" ) unary )* ;
-    * 
-    * unary → ( "!" | "-" ) unary | call ;
+    * unary → ( "!" | "-" | "+" ) unary | call ;
     *
     * call  → primary ( "(" arguments? ")" )* ;
     *
@@ -110,7 +114,8 @@ class Parser {
 
   private Expr assignment() {
     /* assignment → identifier "=" assignment
-    *       | logic_or ;
+    *       | logic_or
+    *       | compoundAssignment ;
     * */
 
     Expr expr = or();
@@ -126,8 +131,36 @@ class Parser {
 
       error(equals, "Invalid assignment target."); 
     }
+    
+    // adding: compound assignment
+    if (match(PLUS_EQUAL, MINUS_EQUAL, STAR_EQUAL, 
+                          SLASH_EQUAL, MODULO_EQUAL)) {
+      Token operator = previous();
+      return compoundAssignment(expr, operator);
+    }
+
 
     return expr;
+  }
+
+  private Expr compoundAssignment(Expr expr, Token operator) {
+    /* compoundAssignment → identifier ( "+=" | "-=" | "*=" | "/=" | "%=" ) addition ;
+     *
+    * */
+
+  Expr value = addition();
+
+      if (expr instanceof Expr.Variable) {
+        Token name = ((Expr.Variable)expr).name;
+
+        Expr val = new Expr.Binary(expr, operator, value);
+        return new Expr.Assign(name, val);
+      }
+
+      error(operator, "Invalid compound assignment target.");
+
+      return expr;
+  
   }
 
   private Expr or() {
@@ -255,12 +288,12 @@ class Parser {
   }
   
   private Stmt breakStatement(Token token) {
-    /* breakStmt → "break" ";" ;
+    /* breakStmt → "break" ";"
+     *             | "continue" ";" ;
     *
-    * continueStmt → "continue" ";" ;
     * */
     
-    consume(SEMICOLON, "Expected ';' after break statement.");
+    consume(SEMICOLON, "Expected ';' after break or continue statement.");
     return new Stmt.Break(token);
     
   }
@@ -396,6 +429,8 @@ class Parser {
   }
 
   private Expr addition() {
+    // addition → multiplication ( ( "+" | "-" ) multiplication )* ;
+    
     Expr expr = multiplication();
 
     while (match(MINUS, PLUS)) {
@@ -408,9 +443,12 @@ class Parser {
   }
 
   private Expr multiplication() {
+    // multiplication → unary ( ( "/" | "*" | "%" ) unary )* ;
+    
     Expr expr = unary();
 
-    while (match(SLASH, STAR)) {
+    // adding MODULO
+    while (match(SLASH, STAR, MODULO)) {
       Token operator = previous();
       Expr right = unary();
       expr = new Expr.Binary(expr, operator, right);
@@ -420,8 +458,9 @@ class Parser {
   }
 
   private Expr unary() {
-    // unary → ( "!" | "-" ) unary | call ;
-    if (match(BANG, MINUS)) {
+    // unary → ( "!" | "-" | "+" ) unary | call ;
+    // adding: plus operator
+    if (match(BANG, MINUS, PLUS)) {
       Token operator = previous();
       Expr right = unary();
       return new Expr.Unary(operator, right);
