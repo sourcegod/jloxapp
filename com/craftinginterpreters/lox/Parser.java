@@ -430,7 +430,8 @@ class Parser {
     // exprStmt  → expression ";" ;
 
     Expr expr = expression();
-    consume(SEMICOLON, "Expect toto ';' after expression.");
+    // TODO: delete semicolon after expression
+    consume(SEMICOLON, "Expect ';' after expression.");
     return new Stmt.Expression(expr);
   }
 

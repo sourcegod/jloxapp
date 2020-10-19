@@ -83,8 +83,11 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     // print global outputResult whether no print statement in the code
     // System.out.println(outputResult.getClass().getName());
     // System.out.println("Finalement:"); 
-    if (outputResult instanceof String || outputResult instanceof Double)
-    System.out.println(stringify(outputResult));
+    if (outputResult instanceof String || outputResult instanceof Double ||
+            outputResult instanceof Boolean) {
+        System.out.println(stringify(outputResult));
+        outputResult = null;
+    }
   
   }
 

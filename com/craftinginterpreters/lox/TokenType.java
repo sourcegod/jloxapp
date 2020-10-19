@@ -14,14 +14,17 @@ enum TokenType {
   STAR_EQUAL, SLASH_EQUAL, 
   MODULO, MODULO_EQUAL,
   QUESTION, COLON, 
+  
+  // bitwise operators
+  BIT_NOT, BIT_AND, BIT_OR, BIT_XOR,
 
   // Literals.                                     
   IDENTIFIER, STRING, NUMBER,
 
   // Keywords.                                     
-  AND, CLASS, ELSE, FALSE, FUN, FOR, IF, NIL, OR,
+  AND, BREAK, CONTINUE,
+  CLASS, ELSE, FALSE, FUN, FOR, IF, NIL, OR,
   PRINT, RETURN, SUPER, THIS, TRUE, VAR, WHILE,
-  BREAK, CONTINUE,
 
   EOF
 }

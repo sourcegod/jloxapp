@@ -69,27 +69,27 @@ public class Lox {
 
   }
 
-  static void error(int line, String message) {
-    report(line, "", message);
+  static void error(int line, int col, String message) {
+    report(line, col, "", message);
   }
 
   static void runtimeError(RuntimeError error) {
     System.err.println(error.getMessage() +
-        "\n[line " + error.token.line + "]");
+        "\n[line " + error.token.line + " col " + error.token.col + "]");
     hadRuntimeError = true;
   }
 
-  private static void report(int line, String where, String message) {
+  private static void report(int line, int col, String where, String message) {
     System.err.println(
-        "[line " + line + "] Error" + where + ": " + message);
+        "[line " + line + " col " + col + "] Error" + where + ": " + message);
     hadError = true;
   }
 
   static void error(Token token, String message) {
     if (token.type == TokenType.EOF) {
-      report(token.line, " at end", message);
+      report(token.line, token.col, " at end", message);
     } else {
-      report(token.line, " at '" + token.lexeme + "'", message);
+      report(token.line, token.col, " at '" + token.lexeme + "'", message);
     }
   }
 

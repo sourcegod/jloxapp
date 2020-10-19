@@ -13,6 +13,7 @@ class Scanner {
   private int start = 0;
   private int current = 0;
   private int line = 1;
+  private int col =0;
 
   private static final Map<String, TokenType> keywords;
 
@@ -49,7 +50,7 @@ class Scanner {
       scanToken();
     }
 
-    tokens.add(new Token(EOF, "", null, line));
+    tokens.add(new Token(EOF, "", null, line, col+1));
     return tokens;
   }
 
@@ -59,6 +60,7 @@ class Scanner {
 
   private char advance() {
     current++;
+    col++;
     return source.charAt(current - 1);
   }
 
@@ -68,7 +70,7 @@ class Scanner {
 
   private void addToken(TokenType type, Object literal) {
     String text = source.substring(start, current);
-    tokens.add(new Token(type, text, literal, line));
+    tokens.add(new Token(type, text, literal, line, col));
   }
 
   private void scanToken() {
@@ -94,7 +96,10 @@ class Scanner {
       case '/':
         if (match('/')) {
           // A comment goes until the end of the line.                
-          while (peek() != '\n' && !isAtEnd()) advance();
+          skipComments();
+          // while (peek() != '\n' && !isAtEnd()) advance();
+        } else if (match('*')) {
+            skipMultilineComments();
         } else {
           addToken(match('=') ? SLASH_EQUAL : SLASH);
         }
@@ -113,6 +118,7 @@ class Scanner {
 
       case '\n':
         line++;
+        col =0;
         break;
 
       case '"': string(); break;
@@ -124,7 +130,7 @@ class Scanner {
           identifier();
 
         } else {
-          Lox.error(line, "Unexpected character.");
+          Lox.error(line, col, "Unexpected character.");
         }
 
         break;
@@ -132,7 +138,7 @@ class Scanner {
     }
   }
 
-  private void identifier() {
+    private void identifier() {
     while (isAlphaNumeric(peek())) advance();
 
     // See if the identifier is a reserved word.   
@@ -161,13 +167,16 @@ class Scanner {
 
   private void string() {
     while (peek() != '"' && !isAtEnd()) {
-      if (peek() == '\n') line++;
+      if (peek() == '\n') {
+          line++;
+          col =0;
+      }
       advance();
     }
 
     // Unterminated string.                                 
     if (isAtEnd()) {
-      Lox.error(line, "Unterminated string.");
+      Lox.error(line, col, "Unterminated string.");
       return;
     }
 
@@ -184,6 +193,8 @@ class Scanner {
     if (source.charAt(current) != expected) return false;
 
     current++;
+    col++;
+
     return true;
   }
 
@@ -210,6 +221,34 @@ class Scanner {
   private boolean isDigit(char c) {
     return c >= '0' && c <= '9';
   } 
+
+  private void skipComments() {
+    while (!isAtEnd()) {
+        if (peek() != '\n') {
+            advance();
+        } else {
+            line++;
+            col =0;
+            return;
+        }
+    }
+  
+  }
+
+  private void skipMultilineComments() {
+      while (!isAtEnd()) {
+        advance();
+        if (peek() == '\n') {
+            line++;
+            col =0;
+            continue;
+        }
+        if (peek() == '/' && peekNext() == '*') skipMultilineComments();
+        if (match('*') && match('/')) break;
+      }
+
+  }
+
 
 }
 

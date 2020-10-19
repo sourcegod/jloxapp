@@ -1,31 +1,39 @@
 Lox changelog
-Last update: mercredi, 22/05/19
+Last update: samedi, 01/06/19
+
+# Date: samedi, 01/06/19
+Adding: Nested comments on multiline, line and colomn number on syntax error.
+#--------------------------------------------------------------------------------
 
 # Date: mercredi, 22/05/19
 Adding: superclass, inheritance.
 End of part II for lox's book.
+#--------------------------------------------------------------------------------
 
 # Date: dimanche, 05/05/2019
 Adding: class, getter, setter, this, and constructor.
+#--------------------------------------------------------------------------------
 
 # Date: vendredi, 26/04/19
 Adding: debug function in Resolver class
 static class Variable in Resolver class.
-Warnings manager on inused variables
+Warnings support on inused variables
+#--------------------------------------------------------------------------------
 
 # Date: lundi, 08/04/19
 Adding: lambda functionBody fully implemented,
 visitFunctionStmt, visitExpressionFunction, functionBody in parser.
+#--------------------------------------------------------------------------------
 
 # Date: mardi, 02/04/19
 Adding: Lambda, function expression partially implemented
 Logger class and debug function.
+#--------------------------------------------------------------------------------
 
 # Date: dimanche, 24/03/19
 Adding: Ternary operator,
 resolver class for semantic analyzer
 Modifications to visitUnaryExpr to returns "true" for "!0".
-
 
 #--------------------------------------------------------------------------------
 

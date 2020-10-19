@@ -1,0 +1,7 @@
+print "Before comments";
+/* here is a comment
+on multiple lines
+// here is a single comm on single line
+/* and a new comm inserted */
+*/
+print "After comments";

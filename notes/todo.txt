@@ -1,6 +1,8 @@
 Todo sur l'interpreteur java
 Date: mercredi, 06/03/19
-Last update: mercredi, 22/05/19
+Last update: vendredi, 31/05/19
+# Date: samedi, 01/06/19
+* -- Ajouter le numéro de colone dans les erreurs de syntaxe.
 
 # Date: mercredi, 22/05/19
 -- Chapitre 13:
@@ -25,13 +27,14 @@ utilisée.
 tableau plutot que dans un map ce qui rend la recherche plus lente.
 
 # Date: samedi, 23/03/19
--- Implementer les fonctions anonymes ou lambda.
+* -- Implementer les fonctions anonymes ou lambda.
 
 
 * -- Implementer l'oprateur +=, -=, *=, /=, %= etc...
 
--- Implementer les commentaires imbriqués.
+* -- Implementer les commentaires imbriqués.
 * -- ajout de opérateur ternaire dans la classe expression
+
 -- Ajouter la prise en charge de plusieurs expressions séparées par une
 virgule.
 Ainsi, on pourra passer plusieurs expressions à l'instruction print.
