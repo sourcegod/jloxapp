@@ -18,7 +18,7 @@ class Parser {
   }
 
   List<Stmt> parse() {
-    /* Grammar for prefix and postfix operators
+    /* Grammar for compound assignment 2
      *
     * program     → declaration* EOF ;
     *
@@ -75,13 +75,11 @@ class Parser {
     *
     * comma → assignment ( "," assignment )* ;
     *
-    * assignment → ( call "." )? identifier "=" assignment
-    *       | conditional
-    *       | compoundAssignment ;
-    *
-    * compoundAssignment → identifier ( "+=" | "-=" | "*=" | "/=" | "%=" 
-    *                               | "&=" | "|=" | "^="
-    *                               | "**=" | "<<=" | ">>=" ) expression ;
+    * assignment → ( call "." )? identifier ( ( "=" 
+    *               | "+=" | "-=" | "*=" | "/=" | "%=" 
+    *               | "&=" | "|=" | "^="
+    *               | "**=" | "<<=" | ">>=" ) assignment )? 
+    *       | conditional ;
     *
     * conditional : logicOr "?" expression ":" conditional;
     *
@@ -105,7 +103,7 @@ class Parser {
     *
     * multiplication → unary ( ( "/" | "*" | "%" ) unary )* ;
     *
-    * unary → ( "!" | "-" | "+" | "~") unary 
+    * unary → ( "!" | "-" | "+" | "++" | "--" | "~") unary 
     *           | exponentiation ;
     *
     * exponentiation → prefix ( ( "**" ) unary )* ;
@@ -422,20 +420,26 @@ class Parser {
   }
 
   private Expr assignment() {
-    /* assignment → ( call "." )? identifier "=" assignment
-    *       | conditional
-    *       | compoundAssignment 
+    /* assignment → ( call "." )? identifier ( ( "=" 
+    *               | "+=" | "-=" | "*=" | "/=" | "%=" 
+    *               | "&=" | "|=" | "^="
+    *               | "**=" | "<<=" | ">>=" ) assignment )? 
+    *       | conditional ;
     * */
 
     Expr expr = conditional();
 
-    if (match(EQUAL)) {
+    if (match(EQUAL, PLUS_EQUAL, MINUS_EQUAL,
+              STAR_EQUAL, SLASH_EQUAL, 
+              MOD_EQUAL, EXP_EQUAL,
+              BIT_AND_EQUAL, BIT_OR_EQUAL, BIT_XOR_EQUAL,
+              BIT_LEFT_EQUAL, BIT_RIGHT_EQUAL)) {
       Token equals = previous();
       Expr value = assignment();
 
       if (expr instanceof Expr.Variable) {
         Token name = ((Expr.Variable)expr).name;
-        return new Expr.Assign(name, value);
+        return new Expr.Assign(name, equals, value);
       } else if (expr instanceof Expr.Get) {
         Expr.Get get = (Expr.Get)expr;
         return new Expr.Set(get.object, get.name, value);
@@ -444,6 +448,7 @@ class Parser {
       error(equals, "Invalid assignment target."); 
     }
     
+    /*
     // adding: compound assignment
     if (match(PLUS_EQUAL, MINUS_EQUAL, 
               STAR_EQUAL, SLASH_EQUAL, MOD_EQUAL,
@@ -453,11 +458,14 @@ class Parser {
       Token operator = previous();
       return compoundAssignment(expr, operator);
     }
+    */
+
 
     return expr;
   }
 
   private Expr compoundAssignment(Expr expr, Token operator) {
+    // Deprecated: not used
     /* compoundAssignment → identifier ( "+=" | "-=" | "*=" | "/=" | "%=" 
     *                               | "&=" | "|=" | "^=" 
     *                               | "**=" | "<<=" | ">>=" ) expression ;
@@ -469,7 +477,7 @@ class Parser {
         Token name = ((Expr.Variable)expr).name;
 
         Expr val = new Expr.Binary(expr, operator, value);
-        return new Expr.Assign(name, val);
+        return new Expr.Assign(name, operator, val);
       }
 
       error(operator, "Invalid compound assignment target.");
@@ -667,7 +675,7 @@ class Parser {
   }
 
   private Expr unary() {
-    /* unary → ( "!" | "-" | "+" | "~" ) unary 
+    /* unary → ( "!" | "-" | "+" | "--" | "++" | "~" ) unary 
      *          | exponentiation ;
      * */
 

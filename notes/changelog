@@ -1,6 +1,12 @@
 Lox changelog
 Last update: mardi, 25/06/19 
 
+# Date: vendredi, 28/06/19
+-- Adding: refactoring compound assignment to use only visitassign class.
+-- Adding: multiply and *= operator for string.
+
+#--------------------------------------------------------------------------------
+
 # Date: mardi, 25/06/19
 -- Adding: prefix and postfix operators.
 

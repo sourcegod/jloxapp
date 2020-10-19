@@ -320,7 +320,7 @@ class Scanner {
   }
 
   private void skipNewlines() {
-      // not used
+    // Deprecated: not used
     while (!isAtEnd()) {
         if (match('\n')) {
             line++;

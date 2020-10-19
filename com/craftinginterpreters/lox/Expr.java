@@ -20,8 +20,9 @@ abstract class Expr {
     R visitVariableExpr(Variable expr);
   }
   static class Assign extends Expr {
-    Assign(Token name, Expr value) {
+    Assign(Token name, Token equals, Expr value) {
       this.name = name;
+      this.equals = equals;
       this.value = value;
     }
 
@@ -30,6 +31,7 @@ abstract class Expr {
     }
 
     final Token name;
+    final Token equals;
     final Expr value;
   }
   static class Binary extends Expr {

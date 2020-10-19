@@ -84,6 +84,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     // System.out.println(outputResult.getClass().getName());
     // System.out.println("Finalement:"); 
     if (outputResult instanceof String || outputResult instanceof Double ||
+            outputResult instanceof Integer ||
             outputResult instanceof Boolean) {
         System.out.println(stringify(outputResult));
         outputResult = null;
@@ -257,6 +258,19 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     return true;
   }
 
+  private String multiplyString(String item, double nb, Token op) {
+      if (nb % 1 != 0) throw new RuntimeError(op,
+              "String multiplier must be an integer");
+      if (nb <0) nb =0;
+      int nbTimes = (int)nb;
+    for (int i=1; i < nbTimes; i++) {
+        item += item;
+    }
+
+    return item;
+
+  }
+
   private boolean isEqual(Object a, Object b) {
     // nil is only equal to nil.               
     if (a == null && b == null) return true;
@@ -267,6 +281,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   //
   // adding: isInteger
   private  boolean isInteger(Object object) {
+      if (object instanceof Integer) return true;
       if (object instanceof Double) {
           double val = (double)object;
           return !Double.isInfinite(val) && (Math.floor(val) == val);
@@ -489,6 +504,126 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     Object value = evaluate(expr.value);
    // debug("Assign name: " + expr.name.lexeme);
    // debug("Assign value: " + value);
+   // // Adding: compound assignment 
+    Object cur = environment.get(expr.name);
+    int iVal =0;
+   switch (expr.equals.type) {
+       case EQUAL: break;
+
+        // Adding: compound assignment
+       case PLUS_EQUAL: { 
+            if (cur instanceof Double && value instanceof Double) {
+                checkNumberOperands(expr.equals, cur, value);
+                value = (double)cur + (double)value;
+                break;
+            }
+            if (cur instanceof String || value instanceof String) {
+                value = stringify(cur) + stringify(value);
+                break;
+            }
+
+            throw new RuntimeError(expr.equals, "Operands must be numbers or strings.");
+
+       }
+
+       case MINUS_EQUAL: { 
+            checkNumberOperands(expr.equals, cur, value);
+            value = (double)cur - (double)value;
+            break;
+       }
+
+       case SLASH_EQUAL: { 
+            checkNumberOperands(expr.equals, cur, value);
+            value = (double)cur / (double)value;
+            break;
+       }
+
+       case STAR_EQUAL: { 
+            if (cur instanceof Double && value instanceof Double) {
+                checkNumberOperands(expr.equals, cur, value);
+                value = (double)cur * (double)value;
+                break;
+            }
+            
+            if (cur instanceof String && value instanceof Double) {
+                value = multiplyString(stringify(cur), (double)value, expr.equals); 
+                break;
+            }
+
+            throw new RuntimeError(expr.equals, "Operands must be numbers or strings.");
+
+       }
+
+       case MOD_EQUAL: { 
+            checkNumberOperands(expr.equals, cur, value);
+            value = (double)cur % (double)value;
+            break;
+       }
+
+       case EXP_EQUAL: { 
+            checkNumberOperands(expr.equals, cur, value);
+            value = Math.pow((double)cur, (double)value);
+            break;
+       }
+       
+       // Adding: bitwise operators
+       case BIT_OR_EQUAL: { 
+          if (isInteger(cur) && isInteger(value)) {
+            Double dCur = (Double)cur;
+            Double dValue = (Double)value;
+            iVal = dCur.intValue() | dValue.intValue();
+            value = (double)iVal;
+            break;
+          }
+          throw new RuntimeError(expr.equals, "RuntimeError: operands must be integers.");
+       }
+
+       case BIT_AND_EQUAL:  {
+          if (isInteger(cur) && isInteger(value)) {
+            Double dCur = (Double)cur;
+            Double dValue = (Double)value;
+            iVal = dCur.intValue() & dValue.intValue();
+            value = (double)iVal;
+            break;
+          }
+          throw new RuntimeError(expr.equals, "RuntimeError Man: operands must be integers.");
+       }
+
+       case BIT_XOR_EQUAL:  {
+          if (isInteger(cur) && isInteger(value)) {
+            Double dCur = (Double)cur;
+            Double dValue = (Double)value;
+            iVal = dCur.intValue() ^ dValue.intValue();
+            value = (double)iVal;
+            break;
+          }
+          throw new RuntimeError(expr.equals, "RuntimeError Man: operands must be integers.");
+       }
+       
+       // Adding: bitwise shift operators
+       case BIT_LEFT_EQUAL: {
+          if (isInteger(cur) && isInteger(value)) {
+            Double dCur = (Double)cur;
+            Double dValue = (Double)value;
+            iVal = dCur.intValue() << dValue.intValue();
+            value = (double)iVal;
+            break;
+          }
+          throw new RuntimeError(expr.equals, "RuntimeError Man: operands must be integers.");
+       }
+
+       case BIT_RIGHT_EQUAL: {
+          if (isInteger(cur) && isInteger(value)) {
+            Double dCur = (Double)cur;
+            Double dValue = (Double)value;
+            iVal = dCur.intValue() >> dValue.intValue();
+            value = (double)iVal;
+            break;
+          }
+          throw new RuntimeError(expr.equals, "RuntimeError Man: operands must be integers.");
+       }
+
+    }
 
     Integer distance = locals.get(expr);
     if (distance != null) {
@@ -564,50 +699,56 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         throw new RuntimeError(expr.operator, "Comparison not supported for operands.");
 
       case MINUS:
-      case MINUS_EQUAL:
         checkNumberOperands(expr.operator, left, right);
         return (double)left - (double)right;
 
         // adding: concat string to number
       case PLUS:
-      case PLUS_EQUAL:
         if (left instanceof Double && right instanceof Double) {
           return (double)left + (double)right;
         } 
         if (left instanceof String && right instanceof String) {
           return (String)left + (String)right;
         }
-        if (left instanceof Double && right instanceof String) {
-          return stringify(left) + (String)right;
-        }
-        if (left instanceof String && right instanceof Double) {
-          return (String)left + stringify(right);
+        // converting everything to string
+        if (left instanceof String || right instanceof String) {
+          return stringify(left) + stringify(right);
         }
         throw new RuntimeError(expr.operator, "Operands must be numbers or strings.");
 
-      // adding: SLASH_EQUAL, STAR_EQUAL, MOD, MOD_EQUAL
       case SLASH:
-      case SLASH_EQUAL:
         checkNumberOperands(expr.operator, left, right);
         if ((double)right != 0) return (double)left / (double)right;
         // adding: error: Division by zero
         throw new RuntimeError(expr.operator, "Error: Division by zero.");
 
       case STAR:
-      case STAR_EQUAL:
-        checkNumberOperands(expr.operator, left, right);
-        return (double)left * (double)right;
+        if (left instanceof Double &&right instanceof Double) {
+            checkNumberOperands(expr.operator, left, right);
+            return (double)left * (double)right;
+        }
+        //
+        // Adding: String multiplication
+        if (left instanceof String &&right instanceof Double) {
+            // Double dRight = (Double)right;
+            // int val = dRight.intValue();
+            return multiplyString(stringify(left), (double)right, expr.operator); 
+        }
+
+        if (left instanceof Double &&right instanceof String) {
+            // Double dLeft = (Double)left;
+            // int val = dLeft.intValue();
+            return multiplyString(stringify(right), (double)left, expr.operator); 
+        }
 
       // Adding: EXP
       case EXP:
-      case EXP_EQUAL:
         checkNumberOperands(expr.operator, left, right);
         return Math.pow((double)left, (double)right);
 
 
     // adding: MOD, MOD_EQUAL
     case MOD:
-    case MOD_EQUAL:
         checkNumberOperands(expr.operator, left, right);
         if ((double)right != 0) return (double)left % (double)right;
         // adding: error: Division by zero
@@ -615,7 +756,6 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     // Adding: bitwise operators
     case BIT_OR:
-    case BIT_OR_EQUAL:
         if (isInteger(left) && isInteger(right)) {
             Double dLeft = (Double)left;
             Double dRight = (Double)right;
@@ -625,7 +765,6 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         throw new RuntimeError(expr.operator, "RuntimeError: operands must be integers.");
  
     case BIT_AND:
-    case BIT_AND_EQUAL:
         if (isInteger(left) && isInteger(right)) {
             Double dLeft = (Double)left;
             Double dRight = (Double)right;
@@ -635,7 +774,6 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         throw new RuntimeError(expr.operator, "RuntimeError: operands must be integers.");
 
     case BIT_XOR:
-    case BIT_XOR_EQUAL:
         if (isInteger(left) && isInteger(right)) {
             Double dLeft = (Double)left;
             Double dRight = (Double)right;
@@ -645,7 +783,6 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         throw new RuntimeError(expr.operator, "RuntimeError: operands must be integers.");
     
     case BIT_LEFT:
-    case BIT_LEFT_EQUAL:
         if (isInteger(left) && isInteger(right)) {
             Double dLeft = (Double)left;
             Double dRight = (Double)right;
@@ -655,7 +792,6 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         throw new RuntimeError(expr.operator, "RuntimeError: operands must be integers.");
 
     case BIT_RIGHT:
-    case BIT_RIGHT_EQUAL:
         if (isInteger(left) && isInteger(right)) {
             Double dLeft = (Double)left;
             Double dRight = (Double)right;
