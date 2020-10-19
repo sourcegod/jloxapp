@@ -34,7 +34,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     });
 
     globals.define("println", new Println());
-
+    globals.define("readln", new Readln());
 
   }
 
@@ -531,6 +531,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             value = (double)cur - (double)value;
             break;
        }
+
 
        case SLASH_EQUAL: { 
             checkNumberOperands(expr.equals, cur, value);

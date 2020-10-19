@@ -1,6 +1,20 @@
 Todo sur l'interpreteur java
 Date: mercredi, 06/03/19
-Last update: vendredi, 28/06/19
+Last update: samedi, 29/06/19
+
+# Date: samedi, 29/06/19
+-- Ajouter l'instruction do...while
+-- Ajouter un typde de données de tableau: array
+-- Ajouter la possibilité de d'aller à la ligne après une parenthèse ouvrante
+ou un crochet ouvrant.
+
+-- Ajouter une fonction str() pour convertir les tout objet en chaine,
+une fonction int() pour convertir chaine en entier,
+et une fonction float() pour convertir chaine en double.
+
+* -- Ajouter la fonction readln pour lire une chaine de caractère à partir
+d'entrée standard.
+
 
 # Date: vendredi, 28/06/19
 * -- Ajouter les séquences d'échappement de caractères comme:

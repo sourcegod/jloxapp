@@ -1,20 +1,35 @@
 Lox changelog
-Last update: vendredi, 28/06/19 
+Last update: samedi, 29/06/19 
 
+# lox_32_readln
+# Date: samedi, 29/06/19
+-- Adding: readln function to handle input user.
+-- Fixe: do not insert automatic semicolon after single line
+comment, or multi line comments.
+
+#--------------------------------------------------------------------------------
+
+# lox_31_escape_sequences
 # Date: vendredi, 28/06/19
 -- Adding: escape sequence characters like:
 \\, \n, \", \r, \t, \b in a quote-string.
 
+#--------------------------------------------------------------------------------
+
+# lox_30_compound_assignment_2
+# Date: vendredi, 28/06/19
 -- Adding: refactoring compound assignment to use only visitassign class.
 -- Adding: multiply and *= operator for string.
 
 #--------------------------------------------------------------------------------
 
+# lox_29_prefix_postfix_operators
 # Date: mardi, 25/06/19
 -- Adding: prefix and postfix operators.
 
 #--------------------------------------------------------------------------------
 
+# lox_28_automatic_semicolon_insertion
 # Date: dimanche, 23/06/19
 -- Adding: automatic semicolon insertion.
 -- Empty statement representing by semicolon.

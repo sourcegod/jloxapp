@@ -1,0 +1,8 @@
+// Test for readln function
+
+
+var name = ""
+name = readln("Enter your name: ")
+
+var age = readln("Enter your age: ")
+println("Hello " + name + ", you are " + age + " old, " + "and your are welcome.")

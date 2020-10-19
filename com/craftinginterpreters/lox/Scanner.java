@@ -124,8 +124,6 @@ class Scanner {
   private void scanToken() {
     char c = advance();
 
-    // System.out.println(System.getProperty(line.separator));
-    // System.out.println(col + ": " + c);
     switch (c) {
       case '(': addToken(LEFT_PAREN); break;
       case ')': addToken(RIGHT_PAREN); break;
@@ -194,6 +192,7 @@ class Scanner {
         if (match('/')) {
           // A comment goes until the end of the line.                
           skipComments();
+          // System.out.println("Je passe par la");
           // while (peek() != '\n' && !isAtEnd()) advance();
         } else if (match('*')) {
             skipMultilineComments();
@@ -225,15 +224,16 @@ class Scanner {
         line++;
         col =0;
         // Automatic semicolon insertion
+        if (tokens.size() == 0) break;
         lastToken = tokens.get(tokens.size() -1);
+        // No insert semicolon 
         if (lastToken.type == RIGHT_PAREN && 
                 searchPrintable() == '{' ) {
             // System.out.println("Voici: " + line + ", " + col + ", " + peek());
             break;
         } else if (lastToken.type !=  SEMICOLON &&
-                // lastToken.type != RIGHT_PAREN &&
                 lastToken.type != LEFT_BRACE &&
-                lastToken.type != RIGHT_BRACE) {
+                lastToken.type != RIGHT_BRACE ) {
             addToken(SEMICOLON);
         }
         break;
@@ -345,8 +345,11 @@ class Scanner {
   private void skipComments() {
     while (!isAtEnd()) {
         if (peek() != '\n') {
+            // System.out.println("voici : " + peek());
             advance();
         } else {
+            // Avoid automatic semicolon insertion after newline
+            // if (peek() == '\n') advance();
             line++;
             col =0;
             return;
@@ -363,8 +366,14 @@ class Scanner {
             col =0;
             continue;
         }
+        // for nested multi comments
         if (peek() == '/' && peekNext() == '*') skipMultilineComments();
-        if (match('*') && match('/')) break;
+        if (match('*') && match('/')) {
+            // Avoid automatic semicolon insertion after newline
+            // if (peek() == '\n') advance();
+            break;
+        
+        }
       }
 
   }
