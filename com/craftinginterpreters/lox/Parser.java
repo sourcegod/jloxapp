@@ -171,6 +171,8 @@ class Parser {
 
     if (match(WHILE)) return whileStatement();
 
+    if (match(BREAK)) return breakStatement();
+
     if (match(LEFT_BRACE)) return new Stmt.Block(block());
     
     return expressionStatement();
@@ -222,6 +224,14 @@ class Parser {
 
     return body;
 
+  }
+  
+  private Stmt breakStatement() {
+    // for test
+    Expr condition = null;
+    consume(SEMICOLON, "Expected ';' after break statement.");
+    return new Stmt.Break(condition);
+    
   }
 
   private Stmt ifStatement() {

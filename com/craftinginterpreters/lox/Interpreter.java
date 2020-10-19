@@ -1,10 +1,18 @@
 package com.craftinginterpreters.lox;
 
 import java.util.List;
+import java.util.Stack;
+
+class LoopState {
+  public Boolean isBreak = false;
+  public Boolean isContinue = false;
+}
 
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   private Environment environment = new Environment();
+  public Environment globalEnv = null;
+  Stack<LoopState> loopStack = new Stack<>();
 
   void interpret(List<Stmt> statements) {
     try {
@@ -111,6 +119,15 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
       this.environment = environment;
 
       for (Stmt statement : statements) {
+        System.out.println(statement.getClass().getName());
+        if ( statement instanceof Stmt.Break) { 
+          System.out.println("un break statement");
+          // this.environment = previous;
+          loopStack.peek().isBreak = true;
+          break;
+        }
+        
+        System.out.println("je passe ici");
         execute(statement);
       }
     } finally {
@@ -160,11 +177,28 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Void visitWhileStmt(Stmt.While stmt) {
+    LoopState lpState = new LoopState();
+    loopStack.push(new LoopState());
     while (isTruthy(evaluate(stmt.condition))) {
+      lpState = loopStack.peek();
+      System.out.println("Truthy");
+      System.out.println(lpState.isBreak.toString());
+      if (lpState.isBreak == true) break;
+
       execute(stmt.body);
     }
+
+    loopStack.pop();
     return null;
   }
+  
+  public Void visitBreakStmt(Stmt.Break stmt) {
+    System.out.println("Je suis dans break\n");
+    loopStack.peek().isBreak = true;
+
+    return null;
+  }
+
 
   @Override
   public Object visitAssignExpr(Expr.Assign expr) {
