@@ -139,15 +139,15 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
       this.environment = environment;
 
       for (Stmt statement : statements) {
-        System.out.println(statement.getClass().getName());
+        // System.out.println(statement.getClass().getName());
         if ( statement instanceof Stmt.Break) { 
-          System.out.println("un break statement");
+          // System.out.println("un break statement");
           // this.environment = previous;
           loopStack.peek().isBreak = true;
           break;
         }
         
-        System.out.println("je passe ici");
+        // System.out.println("je passe ici");
         execute(statement);
       }
     } finally {
@@ -165,6 +165,13 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   public Void visitExpressionStmt(Stmt.Expression stmt) {
     evaluate(stmt.expression);
     return null; 
+  }
+
+  @Override
+  public Void visitFunctionStmt(Stmt.Function stmt) {
+    LoxFunction function = new LoxFunction(stmt);
+    environment.define(stmt.name.lexeme, function);
+    return null;
   }
 
   @Override

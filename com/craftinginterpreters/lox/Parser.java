@@ -22,8 +22,15 @@ class Parser {
      *
     * program     → declaration* EOF ;
     *
-    * declaration → varDecl
+    * declaration → funDecl
+    *       | VarDecl
     *       | statement ;
+    *
+    * funDecl  → "fun" function ;
+    *
+    * function → IDENTIFIER "(" parameters? ")" block ;
+    *
+    * parameters → IDENTIFIER ( "," IDENTIFIER )* ;
     *
     * varDecl → "var" IDENTIFIER ( "=" expression )? ";" ;
     *
@@ -67,7 +74,7 @@ class Parser {
     * 
     * unary → ( "!" | "-" ) unary | call ;
     * call  → primary ( "(" arguments? ")" )* ;
-
+    *
     * primary → "true" | "false" | "nil"
     *      | NUMBER | STRING
     *        | "(" expression ")"
@@ -142,11 +149,15 @@ class Parser {
   }
 
   private Stmt declaration() {
-    /* declaration → varDecl
+    /* declaration → funDecl
+     *      | varDecl
     *       | statement ;
     * */
 
     try {
+
+      if (match(FUN)) return function("function");
+      
       if (match(VAR)) return varDeclaration();
 
       return statement();
@@ -290,6 +301,29 @@ class Parser {
     return new Stmt.Expression(expr);
   }
 
+  private Stmt.Function function(String kind) {
+    // function → IDENTIFIER "(" parameters? ")" block ;
+    Token name = consume(IDENTIFIER, "Expect " + kind + " name.");
+
+    consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
+    List<Token> parameters = new ArrayList<>();
+    if (!check(RIGHT_PAREN)) {
+      do {
+        if (parameters.size() >= 32) {
+          error(peek(), "Cannot have more than 32 parameters.");
+        }
+
+        parameters.add(consume(IDENTIFIER, "Expect parameter name."));
+      } while (match(COMMA));
+    }
+    consume(RIGHT_PAREN, "Expect ')' after parameters.");
+
+    consume(LEFT_BRACE, "Expect '{' before " + kind + " body.");
+    List<Stmt> body = block();
+    return new Stmt.Function(name, parameters, body);
+
+  }
+
   private List<Stmt> block() {
     // block     → "{" declaration* "}" ;
     
@@ -355,7 +389,7 @@ class Parser {
   }
 
   private Expr unary() {
-    // unary → ( "!" | "-" ) unary
+    // unary → ( "!" | "-" ) unary | call ;
     if (match(BANG, MINUS)) {
       Token operator = previous();
       Expr right = unary();
@@ -383,6 +417,8 @@ class Parser {
   }
 
   private Expr call() {
+    // call  → primary ( "(" arguments? ")" )* ;
+    
     Expr expr = primary();
 
     while (true) {
