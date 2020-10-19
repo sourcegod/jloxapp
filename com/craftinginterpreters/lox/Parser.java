@@ -26,8 +26,11 @@ class Parser {
     *
     * varDecl → "var" IDENTIFIER ( "=" expression )? ";" ;
     *
-    * statement   → exprStmt
-    *       | printStmt ;
+    * statement → exprStmt
+    *          | printStmt
+    *          | block ;
+    *
+    * block     → "{" declaration* "}" ;
     *
     * exprStmt  → expression ";" ;
     * 
@@ -93,6 +96,10 @@ class Parser {
   }
 
   private Stmt declaration() {
+    /* declaration → varDecl
+    *       | statement ;
+    * */
+
     try {
       if (match(VAR)) return varDeclaration();
 
@@ -106,10 +113,13 @@ class Parser {
   private Stmt statement() {
     /* statement → exprStmt
      *             | printStmt ;
+     *             | block ;
      * */
 
     if (match(PRINT)) return printStatement();
 
+    if (match(LEFT_BRACE)) return new Stmt.Block(block());
+    
     return expressionStatement();
   }
 
@@ -122,6 +132,8 @@ class Parser {
   }
   
   private Stmt varDeclaration() {
+    // varDecl → "var" IDENTIFIER ( "=" expression )? ";" ;
+    
     Token name = consume(IDENTIFIER, "Expect variable name.");
 
     Expr initializer = null;
@@ -139,6 +151,20 @@ class Parser {
     Expr expr = expression();
     consume(SEMICOLON, "Expect ';' after expression.");
     return new Stmt.Expression(expr);
+  }
+
+  private List<Stmt> block() {
+    // block     → "{" declaration* "}" ;
+    
+    List<Stmt> statements = new ArrayList<>();
+
+    while (!check(RIGHT_BRACE) && !isAtEnd()) {
+      statements.add(declaration());
+    }
+
+    consume(RIGHT_BRACE, "Expect '}' after block.");
+
+    return statements;
   }
 
   private Expr equality() {
@@ -203,7 +229,12 @@ class Parser {
   }
 
   private Expr primary() {
-    // primary → NUMBER | STRING | "false" | "true" | "nil"
+    /* primary → "true" | "false" | "nil"
+    *        | NUMBER | STRING
+    *        | "(" expression ")"
+    *        | IDENTIFIER ;
+     * */
+
     if (match(FALSE)) return new Expr.Literal(false);
     if (match(TRUE)) return new Expr.Literal(true);
     if (match(NIL)) return new Expr.Literal(null);
