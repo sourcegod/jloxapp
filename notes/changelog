@@ -1,5 +1,11 @@
 Lox changelog
-Last update: dimanche, 16/06/19 
+Last update: dimanche, 23/06/19 
+
+# Date: dimanche, 23/06/19
+-- Adding: automatic semicolon insertion.
+-- Empty statement representing by semicolon.
+
+#--------------------------------------------------------------------------------
 
 # Date: dimanche, 16/06/19
 -- Adding: Exponent operator, bitwise shift operators

@@ -1,0 +1,19 @@
+var x
+
+
+
+print "coucou"
+
+;
+
+x =55;
+
+print "tout le monde."
+println(x)
+
+fun test() 
+
+   { print "Voici fun testo" 
+   return }
+println("")
+test()

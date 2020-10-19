@@ -585,7 +585,6 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         checkNumberOperands(expr.operator, left, right);
         if ((double)right != 0) return (double)left % (double)right;
         // adding: error: Division by zero
-
         throw new RuntimeError(expr.operator,  "Error: Division by zero.");
 
     // Adding: bitwise operators

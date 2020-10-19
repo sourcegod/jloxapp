@@ -1,6 +1,11 @@
 Todo sur l'interpreteur java
 Date: mercredi, 06/03/19
-Last update: dimanche, 16/06/19 
+Last update: dimanche, 23/06/19
+
+# Date: dimanche, 23/06/19
+* -- Ajouter l'insertion automatique des point-virgules, ";".
+* -- Ajouter la prise en charge de 'linstruction vide représenté par un
+  pointvirgule.
 
 # Date: dimanche, 16/06/19
 * -- Ajouter les bitwise shift opérateurs. 

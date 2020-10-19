@@ -14,6 +14,7 @@ class Scanner {
   private int current = 0;
   private int line = 1;
   private int col =0;
+  Token lastToken;
 
   private static final Map<String, TokenType> keywords;
 
@@ -75,11 +76,24 @@ class Scanner {
 
   private void scanToken() {
     char c = advance();
+
+    // System.out.println(System.getProperty(line.separator));
+    // System.out.println(col + ": " + c);
     switch (c) {
       case '(': addToken(LEFT_PAREN); break;
       case ')': addToken(RIGHT_PAREN); break;
       case '{': addToken(LEFT_BRACE); break;
-      case '}': addToken(RIGHT_BRACE); break;
+
+      // Adding: automatic semicolon insertion
+      case '}':
+        lastToken = tokens.get(tokens.size() -1);
+        if (lastToken.type != LEFT_BRACE &&
+                lastToken.type != RIGHT_BRACE && 
+                lastToken.type != SEMICOLON)
+            addToken(SEMICOLON);
+        addToken(RIGHT_BRACE); 
+        break;
+      
       case ',': addToken(COMMA); break;
       case '.': addToken(DOT); break;
       case '-': addToken(match('=') ? MINUS_EQUAL : MINUS); break;
@@ -148,9 +162,23 @@ class Scanner {
         // Ignore whitespace.                      
         break;
 
+      // Adding: newline
       case '\n':
+        // System.out.println("Newline in scanner: " + line);
         line++;
         col =0;
+        // Automatic semicolon insertion
+        lastToken = tokens.get(tokens.size() -1);
+        if (lastToken.type == RIGHT_PAREN && 
+                searchPrintable() == '{' ) {
+            // System.out.println("Voici: " + line + ", " + col + ", " + peek());
+            break;
+        } else if (lastToken.type !=  SEMICOLON &&
+                // lastToken.type != RIGHT_PAREN &&
+                lastToken.type != LEFT_BRACE &&
+                lastToken.type != RIGHT_BRACE) {
+            addToken(SEMICOLON);
+        }
         break;
 
       case '"': string(); break;
@@ -280,6 +308,41 @@ class Scanner {
       }
 
   }
+
+  private void skipNewlines() {
+      // not used
+    while (!isAtEnd()) {
+        if (match('\n')) {
+            line++;
+            col =0;
+        }
+        else return;
+    }
+  
+  }
+
+  private boolean isPrint(char ch) {
+    return (ch != ' ' && 
+        ch != '\n' && 
+        ch != '\r' && 
+        ch != '\t' );
+  
+  }
+
+  private char searchPrintable() {
+    // if (current + 1 >= source.length()) return '\0';
+    if (isAtEnd()) return '\0';
+    int cur = current;
+    char ch;
+    while (cur < source.length()) {
+        ch = source.charAt(cur);
+        if (isPrint(ch)) return ch;
+        cur++;
+    }
+
+    return '\0';
+  }
+
 
 
 }

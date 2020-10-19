@@ -675,8 +675,11 @@ class Parser {
     return expr;
   }
 
+
+
   private Expr unary() {
     // unary → ( "!" | "-" | "+" ) unary | call ;
+
     // adding: plus, bit_not, operator
     if (match(BANG, MINUS, PLUS, BIT_NOT)) {
       Token operator = previous();
@@ -684,8 +687,38 @@ class Parser {
       return new Expr.Unary(operator, right);
     }
 
-    return call();
+    return prefix();
   }
+    
+  private Expr prefix() {
+    
+    // Adding: prefix operators
+    if (match(MINUS_MINUS, PLUS_PLUS)) {
+      Token operator = previous();
+      Expr right = primary();
+      return new Expr.Unary(operator, right);
+    }
+
+    return postfix();
+
+  }
+
+  private Expr postfix() {
+    
+    // Adding: postfix operators
+    if (match(MINUS_MINUS, PLUS_PLUS)) {
+      current--;
+      Token operator = peek();
+      current--;
+      Expr left = primary();
+      advance();
+      return new Expr.Unary(operator, left);
+    }
+
+    return call();
+
+  }
+
 
   private Expr call() {
     // call → primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
