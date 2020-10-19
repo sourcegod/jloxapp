@@ -1,0 +1,18 @@
+fun make_adder(n) {
+  fun adder(i) {
+    return n + i;
+  }
+  return adder;
+}
+var add5 = make_adder(5);
+print add5(1);
+print add5(100);
+
+// var a=33;
+// fun () { print a; };
+// { print "coucou"; }
+// { print "coucou " + a; }
+// fun test(fnx) { fnx(); }
+// var v = fun () { 55; };
+// test();
+// test (fun () { print a; });

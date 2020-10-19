@@ -17,8 +17,8 @@ class LoxFunction implements LoxCallable {
   @Override
   public String toString() {
    
-    if (name == null) return "<fn> Lambda";
-    return "<fn " + name + ">";
+    if (name == null) return "<Fn Lambda>";
+    return "<Fn " + name + ">";
   }
 
   @Override

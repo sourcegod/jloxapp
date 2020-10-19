@@ -137,6 +137,7 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
   
   @Override
   public Void visitFunctionExpr(Expr.Function expr) {
+    /*
     for (Token param : expr.params) {
       declare(param);
       define(param);
@@ -144,7 +145,9 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     beginScope();
     resolve(expr.body);
     endScope();
-    // resolveFunction(expr, FunctionType.FUNCTION);
+    */
+
+    resolveFunction(expr, FunctionType.FUNCTION);
     return null;
 
   }

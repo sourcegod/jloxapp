@@ -28,7 +28,9 @@ class Parser {
     *
     * funDecl  → "fun" function ;
     *
-    * function → IDENTIFIER "(" parameters? ")" block ;
+    * function → IDENTIFIER "(" functionBody ")" ;
+    *
+    * functionBody → "(" parameters? ")" block ;
     *
     * parameters → IDENTIFIER ( "," IDENTIFIER )* ;
     *
@@ -95,7 +97,8 @@ class Parser {
     * primary → "true" | "false" | "nil"
     *      | NUMBER | STRING
     *        | "(" expression ")"
-    *        | IDENTIFIER ;
+    *        | IDENTIFIER
+    *        | lambda ;
     *
     * arguments → expression ( "," expression )* ;
     *
@@ -390,7 +393,7 @@ class Parser {
     // exprStmt  → expression ";" ;
 
     Expr expr = expression();
-    consume(SEMICOLON, "Expect ';' after expression.");
+    consume(SEMICOLON, "Expect toto ';' after expression.");
     return new Stmt.Expression(expr);
   }
 
@@ -401,6 +404,8 @@ class Parser {
   }
 
   private Expr.Function functionBody(String kind) {
+    // functionBody → "(" parameters? ")" block ;
+
     consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
     List<Token> parameters = new ArrayList<>();
     if (!check(RIGHT_PAREN)) {
@@ -414,7 +419,6 @@ class Parser {
     }
     consume(RIGHT_PAREN, "Expect ')' after parameters.");
 
-    Logger.debug("je passe ici");
     consume(LEFT_BRACE, "Expect '{' before " + kind + " body.");
     List<Stmt> body = block();
     return new Expr.Function(parameters, body);
@@ -539,7 +543,8 @@ class Parser {
     /* primary → "true" | "false" | "nil"
     *        | NUMBER | STRING
     *        | "(" expression ")"
-    *        | IDENTIFIER ;
+    *        | IDENTIFIER 
+    *        | lambda ;
      * */
 
     if (match(FALSE)) return new Expr.Literal(false);
@@ -554,7 +559,7 @@ class Parser {
     if (match(IDENTIFIER)) {
       return new Expr.Variable(previous());
     }
-
+    // lambda function
     if (match(FUN)) return functionBody("function");
 
     if (match(LEFT_PAREN)) {

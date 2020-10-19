@@ -1,0 +1,9 @@
+fun even(x) { 
+  return (x%2 == 0 ? "yes" : "no"); 
+}
+
+print "even(123): " + even(123);
+print "even(44): " + even(44);
+fun oddOrEven(x) { return ( 1&x ) ? "odd" : "even"; }
+println("oddOrEven(55): " + oddOrEven(55)); 
+println("oddOrEven(66): " + oddOrEven(66)); 

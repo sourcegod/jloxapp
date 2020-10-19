@@ -1,0 +1,31 @@
+Last update: lundi, 08/04/19
+
+# Date: lundi, 08/04/19
+Adding: lambda functionBody fully implemented,
+visitFunctionStmt, visitExpressionFunction, functionBody in parser.
+
+# Date: mardi, 02/04/19
+Adding: Lambda, function expression partially implemented
+Logger class and debug function.
+
+# Date: dimanche, 24/03/19
+Adding: Ternary operator,
+resolver class for semantic analyzer
+Modifications to visitUnaryExpr to returns "true" for "!0".
+
+
+#--------------------------------------------------------------------------------
+
+# Date: samedi, 23/03/19
+Adding: closure function.
+Operators: +unary operator, +=, -=, *=, /=, %= 
+and compoundAssignment function.
+
+#--------------------------------------------------------------------------------
+
+# Date: vendredi, 22/03/19
+Adding: println native function, improve break and continue statement
+Functions: visitBreak, breakStatement, printResult, 
+Classes: Break, Println
+
+#--------------------------------------------------------------------------------

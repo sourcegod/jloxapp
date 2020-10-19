@@ -40,7 +40,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   void debug(String msg) {
     if (isDebug == true) {
-      Logger.debug(classTitle + msg);
+      Logger.debug(msg);
     }
     
   }
@@ -52,6 +52,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   }
   void interpret(List<Stmt> statements) {
     String name = "";
+    debug("\n" + classTitle);
     debug("List of Statement class name");
     for (int i=0; i < statements.size(); i++) {
       Stmt item = statements.get(i);
@@ -125,7 +126,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Object visitVariableExpr(Expr.Variable expr) {
-    debug("visitVariable: name: " + getClassName(expr.name));
+    debug("visitVariableExpr: name: " + expr.name.lexeme);
     return lookUpVariable(expr.name, expr);
   }
 
@@ -192,7 +193,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   }
 
   private void execute(Stmt stmt) {
-    debug("execute: stmt: " + getClassName(stmt));
+    debug("\nexecute top level: stmt: " + getClassName(stmt));
     stmt.accept(this);
 
   }
@@ -234,7 +235,8 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   @Override
   public Void visitFunctionStmt(Stmt.Function stmt) {
     debug("visitFunctionStmt : name: " + stmt.name.lexeme);
-    LoxFunction function = new LoxFunction(stmt.name.lexeme, stmt.function, environment);
+    LoxFunction function = new LoxFunction(stmt.name.lexeme, stmt.function, 
+        environment);
 
     environment.define(stmt.name.lexeme, function);
     return null;
@@ -272,10 +274,13 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Void visitVarStmt(Stmt.Var stmt) {
+    debug("VisitVarStmt: ");
+    debug("var name: " + stmt.name.lexeme);
     Object value = null;
     if (stmt.initializer != null) {
       value = evaluate(stmt.initializer);
     }
+    debug("Var value: " + value);
 
     environment.define(stmt.name.lexeme, value);
     return null;
@@ -283,6 +288,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Void visitWhileStmt(Stmt.While stmt) {
+    debug("visitWhileStmt: " );
     while (isTruthy(evaluate(stmt.condition))) {
       try {
         execute(stmt.body);
@@ -293,6 +299,8 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
       }
 
     }
+    
+    debug("End visitWhileStmt");
 
     return null;
   }
@@ -316,9 +324,10 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Object visitAssignExpr(Expr.Assign expr) {
-    debug("assignexpr : expr : " + getClassName(expr));
+    debug("VisitAssignexpr : expr : " + getClassName(expr));
     Object value = evaluate(expr.value);
-    debug("assignexpr : value: " + value);
+    debug("Assign name: " + expr.name.lexeme);
+    debug("Assign value: " + value);
 
     Integer distance = locals.get(expr);
     if (distance != null) {
@@ -334,6 +343,8 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   public Object visitBinaryExpr(Expr.Binary expr) {
     Object left = evaluate(expr.left);
     Object right = evaluate(expr.right); 
+    debug("VisitBinaryExpr: ");
+    debug("left: " + left + ", operator: " + expr.operator.lexeme + ", right: " + right);
 
     switch (expr.operator.type) {
       case GREATER:
@@ -416,7 +427,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Object visitCallExpr(Expr.Call expr) {
-    debug("visitFunctionCallExpr : callee: " + getClassName(expr.callee));
+    debug("visitCallExpr : callee: " + getClassName(expr.callee));
     Object callee = evaluate(expr.callee);
     debug("voici callee : " + callee);
 
@@ -442,11 +453,12 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     return function.call(this, arguments);
   }
   
-  public Void visitFunctionExpr(Expr.Function expr) {
+  public Object visitFunctionExpr(Expr.Function expr) {
     debug("visitFunctionExpr : " + getClassName(expr));
+    debug("visitFunctionExpr : body " + getClassName(expr.body));
     // executeBlock(expr.body, new Environment(environment));
 
- return null;
+ return new LoxFunction(null, expr, environment);
 
   }
 
