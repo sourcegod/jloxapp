@@ -1,4 +1,8 @@
-Last update: mardi, 02/04/19
+Last update: lundi, 08/04/19
+
+# Date: lundi, 08/04/19
+Adding: lambda functionBody fully implemented,
+visitFunctionStmt, visitExpressionFunction, functionBody in parser.
 
 # Date: mardi, 02/04/19
 Adding: Lambda, function expression partially implemented

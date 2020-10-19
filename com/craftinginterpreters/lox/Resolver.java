@@ -6,11 +6,30 @@ import java.util.Map;
 import java.util.Stack;
 
 class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
-  private final Interpreter interpreter;
-  private final Stack<Map<String, Boolean>> scopes = new Stack<>();
-  private FunctionType currentFunction = FunctionType.NONE;
 
+  private static class Variable {
+    final Token name;
+    VariableState state;
+
+    private Variable(Token name, VariableState state) {
+      this.name = name;
+      this.state = state;
+    }
+  }
+
+  private enum VariableState {
+    DECLARED,
+    DEFINED,
+    READ
+  }
+
+  private final Interpreter interpreter;
+  private final Stack<Map<String, Variable>> scopes = new Stack<>();
+  private FunctionType currentFunction = FunctionType.NONE;
+  Boolean isDebug = true;
+  
   Resolver(Interpreter interpreter) {
+    debug("Resolver: ");
     this.interpreter = interpreter;
   }
 
@@ -18,29 +37,43 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     NONE,
     FUNCTION
   }
+  void debug(String msg) {
+    if (isDebug == true) {
+      Logger.debug(msg);
+    }
+    
+  }
+
 
   void resolve(List<Stmt> statements) {
+    debug("\nTopLevel Resolver");
+    debug("Resolve statement list");
     for (Stmt statement : statements) {
       resolve(statement);
+    printScopes();
     }
   }
 
   @Override
   public Void visitBlockStmt(Stmt.Block stmt) {
+    debug("visitblock before scope");
     beginScope();
     resolve(stmt.statements);
     endScope();
+    debug("visitblock after scope");
     return null;
   }
 
   @Override
   public Void visitExpressionStmt(Stmt.Expression stmt) {
+    debug("visitExpressionStmt");
     resolve(stmt.expression);
     return null;
   }
 
   @Override
   public Void visitFunctionStmt(Stmt.Function stmt) {
+    debug("visitFunctionStmt");
     declare(stmt.name);
     define(stmt.name);
 
@@ -58,6 +91,7 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
   @Override
   public Void visitPrintStmt(Stmt.Print stmt) {
+    debug("visitPrintStmt");
     resolve(stmt.expression);
     return null;
   }
@@ -77,6 +111,7 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
   @Override
   public Void visitVarStmt(Stmt.Var stmt) {
+    debug("visitVarStmt");
     declare(stmt.name);
     if (stmt.initializer != null) {
       resolve(stmt.initializer);
@@ -87,6 +122,7 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
   @Override
   public Void visitWhileStmt(Stmt.While stmt) {
+    debug("visitWhileStmt");
     resolve(stmt.condition);
     resolve(stmt.body);
     return null;
@@ -96,19 +132,22 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
   @Override
   public Void visitBreakStmt(Stmt.Break stmt) {
     
+    debug("visitBreakStmt");
     
     return null;
   }
 
   @Override
   public Void visitAssignExpr(Expr.Assign expr) {
+    debug("visitAssignExpr");
     resolve(expr.value);
-    resolveLocal(expr, expr.name);
+    resolveLocal(expr, expr.name, false);
     return null;
   }
 
   @Override
   public Void visitBinaryExpr(Expr.Binary expr) {
+    debug("visitBinaryExpr");
     resolve(expr.left);
     resolve(expr.right);
     return null;
@@ -116,6 +155,7 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
   // adding: visitTernaryExpr
   @Override
   public Void visitTernaryExpr(Expr.Ternary expr) {
+    debug("visitTernaryExpr");
     resolve(expr.condition);
     resolve(expr.thenBranch);
     resolve(expr.elseBranch);
@@ -126,6 +166,7 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
   @Override
   public Void visitCallExpr(Expr.Call expr) {
+    debug("visitCallExpr");
     resolve(expr.callee);
 
     for (Expr argument : expr.arguments) {
@@ -137,16 +178,7 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
   
   @Override
   public Void visitFunctionExpr(Expr.Function expr) {
-    /*
-    for (Token param : expr.params) {
-      declare(param);
-      define(param);
-    }
-    beginScope();
-    resolve(expr.body);
-    endScope();
-    */
-
+    debug("visitFunctionExpr");
     resolveFunction(expr, FunctionType.FUNCTION);
     return null;
 
@@ -154,17 +186,20 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
   @Override
   public Void visitGroupingExpr(Expr.Grouping expr) {
+    debug("visitGroupingExpr");
     resolve(expr.expression);
     return null;
   }
 
   @Override
   public Void visitLiteralExpr(Expr.Literal expr) {
+    debug("visitLiteralExpr");
     return null;
   }
 
   @Override
   public Void visitLogicalExpr(Expr.Logical expr) {
+    debug("visitLogicalalExpr");
     resolve(expr.left);
     resolve(expr.right);
     return null;
@@ -172,23 +207,27 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
   @Override
   public Void visitUnaryExpr(Expr.Unary expr) {
+    debug("visitUnaryExpr");
     resolve(expr.right);
     return null;
   }
 
   @Override
   public Void visitVariableExpr(Expr.Variable expr) {
+    debug("visitVariableExpr");
     if (!scopes.isEmpty() &&
-        scopes.peek().get(expr.name.lexeme) == Boolean.FALSE) {
-      Lox.error(expr.name,
-          "Cannot read local variable in its own initializer.");
+            scopes.peek().containsKey(expr.name.lexeme) &&
+            scopes.peek().get(expr.name.lexeme).state == VariableState.DECLARED) {
+          Lox.error(expr.name,
+              "Cannot read local variable in its own initializer.");
     }
 
-    resolveLocal(expr, expr.name);
+    resolveLocal(expr, expr.name, true);
     return null;
   }
 
   private void resolve(Stmt stmt) {
+    debug("Resolve Stmt");
     stmt.accept(this);
   }
 
@@ -197,6 +236,7 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     FunctionType enclosingFunction = currentFunction;
     currentFunction = type;
 
+    debug("resolveFunction before beginscope");
     beginScope();
     for (Token param : function.params) {
       declare(param);
@@ -205,47 +245,83 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     resolve(function.body);
     endScope();
     currentFunction = enclosingFunction;
+    debug("resolveFunction after endscope");
   }
 
   private void resolve(Expr expr) {
+    debug("resolve expr");
     expr.accept(this);
   }
 
+ 
   private void beginScope() {
-    scopes.push(new HashMap<String, Boolean>());
+    debug("beginScope");
+    scopes.push(new HashMap<String, Variable>());
   }
 
   private void endScope() {
-    scopes.pop();
+    debug("endScope");
+    Map<String, Variable> scope = scopes.pop();
+
+        for (Map.Entry<String, Variable> entry : scope.entrySet()) {
+          if (entry.getValue().state == VariableState.DEFINED) {
+            Lox.error(entry.getValue().name, "Local variable is not used.");
+          }
+        }
   }
 
   private void declare(Token name) {
+    debug("declare name");
     if (scopes.isEmpty()) return;
 
-    Map<String, Boolean> scope = scopes.peek();
+    Map<String, Variable> scope = scopes.peek();
     if (scope.containsKey(name.lexeme)) {
       Lox.error(name,
           "Variable with this name already declared in this scope.");
     }
 
-
-    scope.put(name.lexeme, false);
+    scope.put(name.lexeme, new Variable(name, VariableState.DECLARED));
   }
 
   private void define(Token name) {
+    debug("define name");
     if (scopes.isEmpty()) return;
-    scopes.peek().put(name.lexeme, true);
+    scopes.peek().get(name.lexeme).state = VariableState.DEFINED;
   }
 
-  private void resolveLocal(Expr expr, Token name) {
+  private void resolveLocal(Expr expr, Token name, boolean isRead) {
+    debug("resolveLocal expr");
     for (int i = scopes.size() - 1; i >= 0; i--) {
       if (scopes.get(i).containsKey(name.lexeme)) {
         interpreter.resolve(expr, scopes.size() - 1 - i);
+
+        // Mark it used.
+        if (isRead) {
+          scopes.get(i).get(name.lexeme).state = VariableState.READ;
+        }
         return;
       }
     }
 
-    // Not found. Assume it is global.                   
+    // Not found. Assume it is global.
+  }
+
+  void printScopes() {
+    debug("\nPrint scopes");
+    Map<String, Variable> scope;
+    if (scopes.isEmpty()) {
+      debug("Scopes are empty");
+      return;
+    }
+    for (int i=0; i< scopes.size(); i++) {
+      scope = scopes.get(i);
+      for (String key: scope.keySet()) {
+        Variable cVar = scope.get(key);
+        System.out.println(key + ": " + cVar.name + ", " + cVar.state);
+      
+      }
+    }
+
   }
 
 }

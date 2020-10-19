@@ -68,6 +68,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
       // whether no print statement 
       if (!isPrint) printResult();
       isPrint = false;
+      printState();
 
     } catch (RuntimeError error) {
       Lox.runtimeError(error);
@@ -81,6 +82,29 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     System.out.println(stringify(outputResult));
   
   }
+
+  public void printState() {
+      debug("\nEnvironment state");
+      debug("Globals state");
+      Map<String, Object> values = globals.values;
+      if (values.isEmpty()) {
+          debug("Globals is empty");
+      } else {
+          for (Map.Entry<String, Object> entry : values.entrySet())  {
+              debug(entry.getKey() + ": " + entry.getValue());
+          }
+      }
+      debug("\nLocals state");
+      if (locals.isEmpty()) {
+          debug("Locals is empty");
+      } else {
+          for (Map.Entry<Expr, Integer> entry : locals.entrySet()) {
+              debug(entry.getKey() + ": " + entry.getValue());
+          }
+      }
+ 
+  }
+
 
   @Override
   public Object visitLiteralExpr(Expr.Literal expr) {
@@ -199,6 +223,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   }
 
   void resolve(Expr expr, int depth) {
+    debug("\nResolve expr in Interpreter");
     locals.put(expr, depth);
   }
 
@@ -283,6 +308,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     debug("Var value: " + value);
 
     environment.define(stmt.name.lexeme, value);
+    printState();
     return null;
   }
 
