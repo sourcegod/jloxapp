@@ -185,7 +185,13 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         checkNumberOperand(expr.operator, right);
         return (double)right;
     
- 
+      case BIT_NOT:
+        if (isInteger(right)) {
+            Double dRight = (Double)right;
+            return (double)(~dRight.intValue());
+        }
+        throw new RuntimeError(expr.operator, "RuntimeError: operand must be integer.");
+  
     }
 
 
@@ -232,6 +238,24 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     return a.equals(b);
   }
+  //
+  // adding: isInteger
+  private  boolean isInteger(Object object) {
+      if (object instanceof Double) {
+          double val = (double)object;
+          return !Double.isInfinite(val) && (Math.floor(val) == val);
+      }
+
+      return false;
+
+  }
+
+  private void checkNumberOperands(Token operator,
+                                   Object left, Object right) {
+    if (left instanceof Double && right instanceof Double) return;
+    
+    throw new RuntimeError(operator, "Operands must be numbers.");
+  }
 
   private String stringify(Object object) {
     if (object == null) return "nil";
@@ -254,9 +278,9 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   }
 
   private Object evaluate(Expr expr) {
-    //// debug("evaluate: expr : " + getClassName(expr));
+    // debug("evaluate: expr : " + getClassName(expr));
     outputResult =  expr.accept(this);
-    //// debug("evaluate: result : " + outputResult);
+    // debug("evaluate: result : " + outputResult);
     
     return outputResult;
   }
@@ -458,68 +482,135 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
    // debug("left: " + left + ", operator: " + expr.operator.lexeme + ", right: " + right);
 
     switch (expr.operator.type) {
+      // adding: string comparison
       case GREATER:
-        checkNumberOperands(expr.operator, left, right);
-        return (double)left > (double)right;
+        if (left instanceof Double && right instanceof Double) {
+            return (double)left > (double)right;
+        }
+        if (left instanceof String && right instanceof String) {
+            return left.toString().compareTo((String)right) > 0;
+        }
+        throw new RuntimeError(expr.operator, "Comparison not supported for operands.");
+      
       case GREATER_EQUAL:
-        checkNumberOperands(expr.operator, left, right);
-        return (double)left >= (double)right;
-      case LESS:
-        checkNumberOperands(expr.operator, left, right);
-        return (double)left < (double)right;
-      case LESS_EQUAL:
-        checkNumberOperands(expr.operator, left, right);
-        return (double)left <= (double)right;
+        if (left instanceof Double && right instanceof Double) {
+            return (double)left >= (double)right;
+        }
+        if (left instanceof String && right instanceof String) {
+            return left.toString().compareTo((String)right) >= 0;
+        }
+        throw new RuntimeError(expr.operator, "Comparison not supported for operands.");
 
-      case BANG_EQUAL: return !isEqual(left, right);
-      case EQUAL_EQUAL: return isEqual(left, right);
+      case LESS:
+        if (left instanceof Double && right instanceof Double) {
+            return (double)left < (double)right;
+        }
+        if (left instanceof String && right instanceof String) {
+            return left.toString().compareTo((String)right) < 0;
+        }
+        throw new RuntimeError(expr.operator, "Comparison not supported for operands.");
+
+      case LESS_EQUAL:
+        if (left instanceof Double && right instanceof Double) {
+            return (double)left <= (double)right;
+        }
+        if (left instanceof String && right instanceof String) {
+            return left.toString().compareTo((String)right) <= 0;
+        }
+        throw new RuntimeError(expr.operator, "Comparison not supported for operands.");
+
+      case BANG_EQUAL: 
+        if (left instanceof Double && right instanceof Double) {
+            return !isEqual(left, right);
+        }
+        if (left instanceof String && right instanceof String) {
+            return left.toString().compareTo((String)right) != 0;
+        }
+        throw new RuntimeError(expr.operator, "Comparison not supported for operands.");
+
+      case EQUAL_EQUAL: 
+        if (left instanceof Double && right instanceof Double) {
+            return isEqual(left, right);
+        }
+        if (left instanceof String && right instanceof String) {
+            return left.toString().compareTo((String)right) == 0;
+        }
+        throw new RuntimeError(expr.operator, "Comparison not supported for operands.");
 
       case MINUS:
       case MINUS_EQUAL:
         checkNumberOperands(expr.operator, left, right);
         return (double)left - (double)right;
 
+        // adding: concat string to number
       case PLUS:
       case PLUS_EQUAL:
         if (left instanceof Double && right instanceof Double) {
           return (double)left + (double)right;
         } 
-
         if (left instanceof String && right instanceof String) {
           return (String)left + (String)right;
         }
-        
         if (left instanceof Double && right instanceof String) {
           return stringify(left) + (String)right;
         }
-
         if (left instanceof String && right instanceof Double) {
           return (String)left + stringify(right);
         }
+        throw new RuntimeError(expr.operator, "Operands must be numbers or strings.");
 
-        throw new RuntimeError(expr.operator,
-        "Operands must be numbers or strings.");
-
-      // adding: SLASH_EQUAL, STAR_EQUAL, MODULO, MODULO_EQUAL
+      // adding: SLASH_EQUAL, STAR_EQUAL, MOD, MOD_EQUAL
       case SLASH:
       case SLASH_EQUAL:
         checkNumberOperands(expr.operator, left, right);
         if ((double)right != 0) return (double)left / (double)right;
         // adding: error: Division by zero
-        throw new RuntimeError(expr.operator, 
-            "Error: Division by zero.");
+        throw new RuntimeError(expr.operator, "Error: Division by zero.");
 
       case STAR:
       case STAR_EQUAL:
         checkNumberOperands(expr.operator, left, right);
         return (double)left * (double)right;
 
-    // adding: MODULO, MODULO_EQUAL
-    case MODULO:
-      case MODULO_EQUAL:
+    // adding: MOD, MOD_EQUAL
+    case MOD:
+    case MOD_EQUAL:
         checkNumberOperands(expr.operator, left, right);
-        return (double)left % (double)right;
-    
+        if ((double)right != 0) return (double)left % (double)right;
+        // adding: error: Division by zero
+        throw new RuntimeError(expr.operator,  "Error: Division by zero.");
+
+    // Adding: bitwise operators
+    case BIT_OR:
+    case BIT_OR_EQUAL:
+        if (isInteger(left) && isInteger(right)) {
+            Double dLeft = (Double)left;
+            Double dRight = (Double)right;
+            int val = dLeft.intValue() | dRight.intValue();
+            return (double)val;
+        }
+        throw new RuntimeError(expr.operator, "RuntimeError: operands must be integers.");
+ 
+    case BIT_AND:
+    case BIT_AND_EQUAL:
+        if (isInteger(left) && isInteger(right)) {
+            Double dLeft = (Double)left;
+            Double dRight = (Double)right;
+            int val = dLeft.intValue() & dRight.intValue();
+            return (double)val;
+        }
+        throw new RuntimeError(expr.operator, "RuntimeError: operands must be integers.");
+
+    case BIT_XOR:
+    case BIT_XOR_EQUAL:
+        if (isInteger(left) && isInteger(right)) {
+            Double dLeft = (Double)left;
+            Double dRight = (Double)right;
+            int val = dLeft.intValue() ^ dRight.intValue();
+            return (double)val;
+        }
+        throw new RuntimeError(expr.operator, "RuntimeError: operands must be integers.");
+     
     }
 
     // Unreachable.                                
@@ -585,12 +676,4 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   }
 
-  private void checkNumberOperands(Token operator,
-                                   Object left, Object right) {
-    if (left instanceof Double && right instanceof Double) return;
-    
-    throw new RuntimeError(operator, "Operands must be numbers.");
-  }
-
 }
-

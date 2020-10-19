@@ -92,7 +92,7 @@ class Scanner {
       case '<': addToken(match('=') ? LESS_EQUAL : LESS); break;
       case '>': addToken(match('=') ? GREATER_EQUAL : GREATER); break;
       
-      // adding: SLASH_EQUAL and MODULO, MODULO_EQUAL
+      // adding: SLASH_EQUAL and MOD, MOD_EQUAL
       case '/':
         if (match('/')) {
           // A comment goes until the end of the line.                
@@ -104,11 +104,17 @@ class Scanner {
           addToken(match('=') ? SLASH_EQUAL : SLASH);
         }
         break;
-      case '%': addToken(match('=') ? MODULO_EQUAL : MODULO); break;
+      case '%': addToken(match('=') ? MOD_EQUAL : MOD); break;
       
       // adding: colon, question tokens
       case ':': addToken(COLON); break;
       case '?': addToken(QUESTION); break;
+      
+      // adding: bitwise operators
+      case '&': addToken(match('=') ? BIT_AND_EQUAL : BIT_AND); break;
+      case '~': addToken(BIT_NOT); break;
+      case '|': addToken(match('=') ? BIT_OR_EQUAL : BIT_OR); break;
+      case '^': addToken(match('=') ? BIT_XOR_EQUAL : BIT_XOR); break;
 
       case ' ':
       case '\r':

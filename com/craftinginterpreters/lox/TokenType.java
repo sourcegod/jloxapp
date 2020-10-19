@@ -12,11 +12,13 @@ enum TokenType {
   LESS, LESS_EQUAL,
   PLUS_EQUAL, MINUS_EQUAL, 
   STAR_EQUAL, SLASH_EQUAL, 
-  MODULO, MODULO_EQUAL,
+  MOD, MOD_EQUAL,
   QUESTION, COLON, 
   
   // bitwise operators
-  BIT_NOT, BIT_AND, BIT_OR, BIT_XOR,
+  BIT_AND, BIT_AND_EQUAL, BIT_NOT,
+  BIT_OR, BIT_OR_EQUAL, 
+  BIT_XOR, BIT_XOR_EQUAL,
 
   // Literals.                                     
   IDENTIFIER, STRING, NUMBER,

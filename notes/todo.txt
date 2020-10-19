@@ -1,6 +1,15 @@
 Todo sur l'interpreteur java
 Date: mercredi, 06/03/19
-Last update: vendredi, 31/05/19
+Last update: dimanche, 02/06/19
+
+# Date: dimanche, 02/06/19
+* -- Ajouter les bitwise opérateurs dans Expr.Binary.
+De manière à réaliser ce code:
+fun isEven(n) { return 1&n; }
+* -- Ajout de l'exemple isEven dans le fichier is_even.txt
+* -- Ajout de bitwise assignements.
+* -- Ajout de "string comparison": comparaison entre les chaînes de caractères.
+
 # Date: samedi, 01/06/19
 * -- Ajouter le numéro de colone dans les erreurs de syntaxe.
 
@@ -17,9 +26,6 @@ classe lorsque la propriété est invoquer.
 # Date: dimanche, 24/03/19
 * -- Corriger la fonction unaryExpr pour que !0 renvoie true et non false.
 -- Ajouter une fonction input pour gérer la saisie au clavier.
--- Ajouter les bitwise opérateurs dans Expr.Binary.
-De manière à réaliser ce code:
-fun isEven(n) { return 1&n; }
 
 * -- Etendre le résolver pour rapporter une erreur si une variable n'est jamais
 utilisée.

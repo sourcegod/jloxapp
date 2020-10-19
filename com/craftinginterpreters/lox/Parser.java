@@ -18,7 +18,7 @@ class Parser {
   }
 
   List<Stmt> parse() {
-    /* Grammar superclass
+    /* Grammar Bitwise operators
      *
     * program     → declaration* EOF ;
     *
@@ -80,7 +80,8 @@ class Parser {
     *
     * logic_or   → logic_and ( "or" logic_and )* ;
     *
-    * compoundAssignment → identifier ( "+=" | "-=" | "*=" | "/=" | "%=" ) addition ;
+    * compoundAssignment → identifier ( "+=" | "-=" | "*=" | "/=" | "%=" 
+    *                               | "&=" | "|=" | "^=") addition ;
     *
     * ternaryExpr : expression "?" expression ":" expression ;
     *
@@ -92,9 +93,9 @@ class Parser {
     * 
     * addition → multiplication ( ( "+" | "-" ) multiplication )* ;
     *
-    * multiplication → unary ( ( "/" | "*" | "%" ) unary )* ;
+    * multiplication → unary ( ( "/" | "*" | "%" | "&" | "|" | "^") unary )* ;
     * 
-    * unary → ( "!" | "-" | "+" ) unary | call ;
+    * unary → ( "!" | "-" | "+" | "~") unary | call ;
     *
     * call → primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
     *
@@ -149,7 +150,8 @@ class Parser {
     
     // adding: compound assignment
     if (match(PLUS_EQUAL, MINUS_EQUAL, 
-              STAR_EQUAL, SLASH_EQUAL, MODULO_EQUAL)) {
+              STAR_EQUAL, SLASH_EQUAL, MOD_EQUAL,
+              BIT_AND_EQUAL, BIT_OR_EQUAL, BIT_XOR_EQUAL)) {
       Token operator = previous();
       return compoundAssignment(expr, operator);
     }
@@ -165,8 +167,8 @@ class Parser {
   }
 
   private Expr compoundAssignment(Expr expr, Token operator) {
-    /* compoundAssignment → identifier ( "+=" | "-=" | "*=" | "/=" | "%=" ) addition ;
-     *
+    /* compoundAssignment → identifier ( "+=" | "-=" | "*=" | "/=" | "%=" 
+    *                               | "&=" | "|=" | "^=") addition ;
     * */
 
   Expr value = addition();
@@ -517,12 +519,13 @@ class Parser {
   }
 
   private Expr multiplication() {
-    // multiplication → unary ( ( "/" | "*" | "%" ) unary )* ;
+    // multiplication → unary ( ( "/" | "*" | "%" | "&" | "|" | "^") unary )* ;
     
     Expr expr = unary();
 
-    // adding MODULO
-    while (match(SLASH, STAR, MODULO)) {
+    // adding MOD
+    while (match(SLASH, STAR, MOD, 
+                BIT_AND, BIT_OR, BIT_XOR)) {
       Token operator = previous();
       Expr right = unary();
       expr = new Expr.Binary(expr, operator, right);
@@ -533,8 +536,8 @@ class Parser {
 
   private Expr unary() {
     // unary → ( "!" | "-" | "+" ) unary | call ;
-    // adding: plus operator
-    if (match(BANG, MINUS, PLUS)) {
+    // adding: plus, bit_not, operator
+    if (match(BANG, MINUS, PLUS, BIT_NOT)) {
       Token operator = previous();
       Expr right = unary();
       return new Expr.Unary(operator, right);
