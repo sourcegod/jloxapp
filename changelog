@@ -1,5 +1,11 @@
 Lox changelog
-Last update: samedi, 29/06/19 
+Last update: Wed, 21/10/2020
+
+# lox_33_cleanup_1
+# Date: Wed, 21/10/2020
+-- Removing file: AstPrinter.java to fix bug which caused error, when compiling.
+-- Moving test files, from notes directory to tests directory.
+
 
 # lox_32_readln
 # Date: samedi, 29/06/19

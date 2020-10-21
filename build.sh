@@ -2,6 +2,7 @@
 # Script for compile and running Lox language
 # Date: samedi, 27/04/19
 # Author: Coolbrother
+srcDir="src"
 help="Usage:\n
 cgen : Compile GenerateAst script\n
 rgen : Run GenerateAst script\n
@@ -14,19 +15,19 @@ if [ $# -eq 0 ]; then
 elif [ "$1" = "cgen" ]; then
     # Compile GenerateAst.java
     echo "Compile GenerateAst.java"
-    javac -d build/java java/com/craftinginterpreters/tool/GenerateAst.java
+    javac -d build/java $srcDir/com/craftinginterpreters/tool/GenerateAst.java
 elif [ "$1" = "rgen" ]; then
     echo "Run GenerateAst"
     # Run GenerateAst
-    java -cp build/java com.craftinginterpreters.tool.GenerateAst java/com/craftinginterpreters/lox
+    java -cp build/java $srcDir/com.craftinginterpreters.tool.GenerateAst java/com/craftinginterpreters/lox
 elif [ "$1" = "clox" ]; then
     if [ -z "$2" ]; then
         # Compile Lox files
         echo "Compile all Lox files"
-        javac -d build/java java/com/craftinginterpreters/lox/*.java 2>&1 | fmt -s | w3m
+        javac -d build/java $srcDir/com/craftinginterpreters/lox/*.java
     else
         echo "Compile one Lox file"
-        javac -d build/java "$2" 2>&1 | fmt -s | w3m
+        javac -d build/java "$2"
     fi
 elif [ "$1" = "rlox" ]; then
     # Run Lox
@@ -35,7 +36,7 @@ elif [ "$1" = "rlox" ]; then
         java -cp build/java com.craftinginterpreters.lox.Lox
     else
         echo "Run Lox with file: $2"
-        java -cp build/java com.craftinginterpreters.lox.Lox "$2" 2>&1 | fmt -s | w3m
+        java -cp build/java com.craftinginterpreters.lox.Lox "$2"
     fi
 
 fi
